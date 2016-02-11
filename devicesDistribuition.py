@@ -3,23 +3,33 @@ from random import randint
 import numpy as np
 from loraSpecific import *
 import matplotlib.pyplot as plt
+import _pickle as cPickle
+from time import gmtime, strftime
+
 
 RADIUS = 12000
 x_central = 12000 
 y_central = 12000 
 class DeviceDistribuition():
 
-    def __init__(self):
-        self.devices_list = []
+    def __init__(self, number_of_devices):
+        self.number_of_devices = number_of_devices
+        self.coordenate_list = [0]*number_of_devices
+        self.sf_list = [0]*number_of_devices
+        self.distance_from_gateway = [0]*number_of_devices
+        self.q1_probability = [0]*number_of_devices
         self.gateway_list = []
     
     def __del__(self):
-        del self.devices_list
+        del self.number_of_devices
+        del self.coordenate_list
+        del self.sf_list
+        del self.distance_from_gateway
         del self.gateway_list
         
-    def __deviceDistribuition(self, number_of_devices, bottom_radius, higher_radius):
+    def __deviceDistribuition(self, bottom_radius, higher_radius):
     
-        for i in range(number_of_devices):
+        for i in range(self.number_of_devices -1):
             """
             distance_from_center = 2*higher_radius 
             while(distance_from_center < bottom_radius or distance_from_center > higher_radius):
@@ -36,31 +46,37 @@ class DeviceDistribuition():
             x = np.cos(rad)*hypotenuse + x_central
             y = np.sin(rad)*hypotenuse + y_central
             
-            self.devices_list.append([[x, y]])
+            self.coordenate_list[i] = [x, y]
 
     def __setGatewayDistance(self):
 
-        for idx, device in enumerate(self.devices_list):
+        for idx in range(self.number_of_devices -1):
             distances = []
             for gateway_possition in self.gateway_list:
                 distance = math.sqrt(abs(self.getX(idx) - gateway_possition[0])**2 + abs( self.getY(idx) - gateway_possition[1])**2)
                 distances.append(distance)
-            device = device + [distances]
-            self.devices_list[idx] = device
+            
+            self.distance_from_gateway[idx] = distances
         
     #in this function the device_list should have the gateway possition
     def __setSf(self):
 
-        for idx, device in enumerate(self.devices_list):
+        for idx in range(self.number_of_devices -1):
             sf = getSF(min(self.getDeviceDistancesFromGateways(idx)))    
-            device = device + [sf]
-            self.devices_list[idx] = device
+
+            self.sf_list[idx] = sf
+
+    def setQ1probability(self, index, q1):
+        self.q1_probability[index] = q1
+
+    def getQ1probability(self, index):
+        return self.q1_probability[index]
 
     def getSFName(self, index):
-        return self.devices_list[index][2][0]
+        return self.sf_list[index][0]
 
     def getSFNumber(self, index):
-        return self.devices_list[index][2][1]
+        return self.sf_list[index][1]
     
     def getDevicesSameSF(self, sf):
 
@@ -72,20 +88,17 @@ class DeviceDistribuition():
         return same_sf_list
 
     def getX(self, index):
-        return self.devices_list[index][0][0]
+        return self.coordenate_list[index][0]
 
     def getY(self, index):
-        return self.devices_list[index][0][1]
+        return self.coordenate_list[index][1]
 
     def getDeviceDistancesFromGateways(self, index):
-        return self.devices_list[index][1]
+        return self.distance_from_gateway[index]
     
     def getNumberOfDevices(self):
-        return len(self.devices_list) +1
-    
-    def getDevice(self, device_possition):
-        return self.devices_list[device_possition]
-
+        return self.number_of_devices
+        
     def getDeviceInEachSF(self):
         SF_list = ["SF7", "SF8", "SF9", "SF10", "SF11", "SF12"]
         SFs = []
@@ -96,6 +109,76 @@ class DeviceDistribuition():
                     sf = sf +1
             SFs.append(sf)
         return SFs
+
+    def saveObjectData(self, file_name):
+        
+        f = open("./output_data/"+"DeviceDistribuition_"+file_name+strftime("%Y-%m-%d_%H:%M", gmtime())+".plt", 'wb')
+        cPickle.dump(self.__dict__, f, 2)
+        f.close()
+   
+    def loadObjectData(self, file_name):
+        
+        f = open(file_name, 'rb')
+        tmp_dict = cPickle.load(f)
+        f.close()          
+
+        self.__dict__.update(tmp_dict) 
+ 
+    def plotQ1Devices(self, title):
+
+        plt.figure()
+        #cm = plt.cm.get_cmap('RdYlBu')
+        cm = plt.cm.get_cmap('BuGn')
+        x = []
+        y = []
+        value = []
+        for i in range(self.getNumberOfDevices() - 1):
+            x.append(self.getX(i))
+            y.append(self.getY(i))
+            value.append(self.getQ1probability(i))
+
+        sc = plt.scatter(x, y, c=value, vmin=min(value), vmax=1, cmap=cm)
+    
+        plt.colorbar(sc)
+        plt.show()
+
+    def plotQ1Histogram(self, title, hist_type = 'step'):
+
+        plt.close('all')
+        plt.figure(1)
+        sf7 = []
+        sf8 = []
+        sf9 = []
+        sf10 = []
+        sf11 = []
+        sf12 = []
+        
+        for i in range(self.getNumberOfDevices() - 1):
+            
+            if self.getSFNumber(i) == 7:
+                sf7.append(self.getQ1probability(i))
+            elif self.getSFNumber(i) == 8:
+                sf8.append(self.getQ1probability(i))
+            elif self.getSFNumber(i) == 9:
+                sf9.append(self.getQ1probability(i))
+            elif self.getSFNumber(i) == 10:
+                sf10.append(self.getQ1probability(i))
+            elif self.getSFNumber(i) == 11:
+                sf11.append(self.getQ1probability(i))
+            elif self.getSFNumber(i) == 12:
+                sf12.append(self.getQ1probability(i))
+
+
+        plt.title(title)
+        plt.hist(sf7, histtype=hist_type, color="blue", label="SF7")    
+        plt.hist(sf8, histtype=hist_type, color="green", label="SF8") 
+        plt.hist(sf9, histtype=hist_type, color="yellow", label="SF9") 
+        plt.hist(sf10, histtype=hist_type, color="pink",  label="SF10") 
+        plt.hist(sf11, histtype=hist_type, color="black", label="SF11") 
+        plt.hist(sf12, histtype=hist_type, color="brown", label="SF12") 
+
+        plt.legend(loc='upper right')
+        plt.show()
 
     def plotDevices(self, title):
 
@@ -133,19 +216,19 @@ class DeviceDistribuition():
         plt.title(title)
         plt.show()
 
-    def averageDevicesDistribuition(self, number_of_devices, gateway_possition = [(x_central, y_central)]):
+    def averageDevicesDistribuition(self, gateway_possition = [(x_central, y_central)]):
 
         total_area = math.pi*(RADIUS**2)
-        step = 2000
+        step = 12000
         self.gateway_list = gateway_possition
         devices_per_circle = []
         for i in range(0, RADIUS, step):
             internal_circle = math.pi*(i**2)
             external_circle = math.pi*((i+step)**2)
             circular_area = external_circle - internal_circle
-            number_of_devices_per_circle = round((circular_area/total_area)*number_of_devices)
+            number_of_devices_per_circle = round((circular_area/total_area)*self.number_of_devices)
             devices_per_circle.append(number_of_devices_per_circle)
-            self.__deviceDistribuition(number_of_devices_per_circle, i+1, i+step)
+            self.__deviceDistribuition(i+1, i+step)
 
         self.__setGatewayDistance()
         self.__setSf()
