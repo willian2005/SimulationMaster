@@ -25,10 +25,10 @@ def plotConsume1Day():
     power_dbm = 14
     x = 0
     for i in range(7,13):
-        sf_time_per_package = get_toa(25, i)['t_packet'], 14)
-        sf_one_day[0] = lifeTimeEnergyCalculator(test_time, sf_time_per_package, power_dbm, 10)
-        sf_one_day[1] = lifeTimeEnergyCalculator(test_time, sf_time_per_package, power_dbm, 100)
-        sf_one_day[2] = lifeTimeEnergyCalculator(test_time, sf_time_per_package, power_dbm, 1000)
+        sf_time_per_package = get_toa(25, i)['t_packet']
+        sf_one_day[0] = lifeTimeWorkCalculator(test_time, sf_time_per_package, power_dbm, 10)
+        sf_one_day[1] = lifeTimeWorkCalculator(test_time, sf_time_per_package, power_dbm, 100)
+        sf_one_day[2] = lifeTimeWorkCalculator(test_time, sf_time_per_package, power_dbm, 1000)
         plt.bar((x,x+1,x+2), sf_one_day, 0.5)
         x = x+5
     
@@ -51,7 +51,7 @@ if __name__== "__main__":
     print ("t_payload: : %d" % ret["t_payload"])
     print ("t_packet: the time on air in *milisecond*. : %d" % ret["t_packet"])
 
-    print ("Power in miliJoule is: %f" % packageEnergyCalculator(ret["t_packet"], 17))
+    print ("Power in miliJoule is: %f" % packageWorkCalculator(ret["t_packet"], 17))
 
     plotConsume1Day()
 
