@@ -1,18 +1,17 @@
 # -174 + 10*log10(125000) +(6) +(-15)
 import math
 
-snr_per_sf = [(7, -7.5), (8, -10), (9, -12.5), (10, -15), (11, -17.5), (12, -20)]
-
-def loraSensitivity(sf, bw):
+def friisEquation(distance, n =2.75, fc = 868e6):
     """
     Parameters
-        sf: sf desired from 7 to 12
-        bw: the bandwidth used, normally (125000, 250000, 500000)
+        distance: the distance in meters
+        n: propagation coefficient
+        fc: frequency used the transmit the information
+    Return:
+        link budget need used to transmit the information
     """
-    NF = 6
-
-    for sf_base, snr in snr_per_sf:
-        if sf == sf_base:
-            sensitivity = -174 + 10*math.log10(bw) + NF + snr
     
-    return sensitivity
+    c = 3e8        # m/s^2 - c
+    l = c/fc      # meters - wavelength
+    g = math.pow((l/((4*math.pi)*distance)), n)
+    return g

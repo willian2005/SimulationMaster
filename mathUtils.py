@@ -1,3 +1,5 @@
+import math
+
 def jouleCalculator(power_in_w, time_in_s):
     
     ret = {}
@@ -11,3 +13,12 @@ def powerCalculator(current_mA, voltage):
     ret["W"] = (current_mA/1000)*voltage
     ret["mW"] = current_mA*voltage
     return ret
+
+def varianceWhiteNoise(bw = 125000, noise_figure = 6):
+    """
+    Parameters:
+        bw: bandwidth in Hz
+
+    """
+    noise = (10**((-204+noise_figure+(10*math.log10(bw)))/10)) #;  % Watts^2 - Variance of Additive White Gaussian Noise
+    return noise
