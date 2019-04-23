@@ -4,6 +4,7 @@ sys.path.append("..")
 import matplotlib.pyplot as plt
 import numpy as np
 from energyUtils import *
+from haza import *
 
 calc_semtech_power_mw = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
 calc_semtech_power_dbm = [22, 23, 24, 24, 24, 25, 25, 25, 25, 26, 31, 32, 34, 35, 44, 82, 85, 90, 105, 115, 125]
@@ -39,21 +40,52 @@ def plotConsume1Day():
     plt.grid()
     plt.show()
 
+def H1theoricalHaza():
+    
+    h1tl = []
+    for i in range(1, 12000, 400):
+        if i < 2000:
+            h1tl.append(H1Theorical(7, i))
+        elif i < 4000: 
+            h1tl.append(H1Theorical(8, i))
+        elif i < 6000:
+            h1tl.append(H1Theorical(9, i))
+        elif i < 8000:
+            h1tl.append(H1Theorical(10, i))
+        elif i < 10000:
+            h1tl.append(H1Theorical(11, i))
+        else:
+            h1tl.append(H1Theorical(12, i))
+
+    return h1tl
+
+def Q1TheoricalHaza():
+    
+    q1t = []
+    for i in range(1, 12000, 400):
+        q1t.append(Q1Theorical(i))
+    
+    return q1t
+
+def plotC1tTheoricalHaza():
+
+    h = H1theoricalHaza()
+    q = Q1TheoricalHaza()
+
+    c1t = []
+    for i in range(len(h)-1):
+        c1t.append(h[i]*q[i])
+
+    plt.plot(q, "b-", linewidth=1)
+    plt.plot(h, "r-", linewidth=1)
+    plt.plot(c1t, "g-", linewidth=1)
+    plt.xlim(1, 12000)
+    plt.show()
 if __name__== "__main__":
     
-    ret = get_toa(9, 7)
-
-    print ("r_sym: symbol rate in *second* : %d" % ret["r_sym"])
-    print ("t_sym: the time on air in millisecond*. : %d" % ret["t_sym"])
-    print ("t_preamble: : %d" % ret["t_preamble"])
-    print ("v_ceil: : %d" % ret["v_ceil"])
-    print ("symbol_size_payload: : %d" % ret["n_sym_payload"])
-    print ("t_payload: : %d" % ret["t_payload"])
-    print ("t_packet: the time on air in *milisecond*. : %d" % ret["t_packet"])
-
-    print ("Power in miliJoule is: %f" % packageWorkCalculator(ret["t_packet"], 17))
-
-    plotConsume1Day()
+    #plotH1theoricalHaza()
+    plotC1tTheoricalHaza()
+    
 
 
 

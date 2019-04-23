@@ -91,7 +91,21 @@ class TestUM(unittest.TestCase):
 
         snr = SNR_qsf_linear(12)
         self.assertAlmostEqual(snr, 0.01, delta=0.001)
+#Haza H1
+    def testH1Theorical(self):
+        outage = H1Theorical(7, 600)
+        print("outage sf7 600m %f" % outage)
+        self.assertAlmostEqual(outage, 0.99, delta=0.01)
+        outage = H1Theorical(8, 2200)    
+        print("outage sf8 2200m %f" % outage)
+        self.assertAlmostEqual(outage, 0.90, delta=0.01)
 
+#Haza Q1
+    def testQ1Theorical(self):
+        
+        for i in range(1, 12000, 400):
+            outage = Q1Theorical(i)
+            print("Q1 outage %f" % outage)
 
 if __name__ == '__main__':
     unittest.main()
