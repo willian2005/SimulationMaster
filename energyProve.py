@@ -1,10 +1,13 @@
 import sys
 sys.path.append("..")
 
+#import multiprocessing as mp
+from multiprocessing import Process, Queue
+import os
 import matplotlib.pyplot as plt
 import numpy as np
 from energyUtils import *
-from haza import *
+from loraTheoricalSimulation import *
 
 calc_semtech_power_mw = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
 calc_semtech_power_dbm = [22, 23, 24, 24, 24, 25, 25, 25, 25, 26, 31, 32, 34, 35, 44, 82, 85, 90, 105, 115, 125]
@@ -40,51 +43,90 @@ def plotConsume1Day():
     plt.grid()
     plt.show()
 
-def H1theoricalHaza():
+def H1theoricalSimulatedHaza():
     
     h1tl = []
+    h1sm = []
     for i in range(1, 12000, 400):
         if i < 2000:
             h1tl.append(H1Theorical(7, i))
+            h1sm.append(H1Simulated(7, i))
         elif i < 4000: 
             h1tl.append(H1Theorical(8, i))
+            h1sm.append(H1Simulated(8, i))
         elif i < 6000:
             h1tl.append(H1Theorical(9, i))
+            h1sm.append(H1Simulated(9, i))
         elif i < 8000:
             h1tl.append(H1Theorical(10, i))
+            h1sm.append(H1Simulated(10, i))
         elif i < 10000:
             h1tl.append(H1Theorical(11, i))
+            h1sm.append(H1Simulated(11, i))
         else:
             h1tl.append(H1Theorical(12, i))
+            h1sm.append(H1Simulated(12, i))
 
-    return h1tl
+    return h1tl, h1sm
 
-def Q1TheoricalHaza():
+
+
+def Q1TheoricalSimulatedHaza():
+    
+    q1sm = np.zeros(30)
+
+    def processParallelQ1(distance, q, index):
+        temp = Q1Simulated(distance)
+        q.put((index, temp))
+        print("the distance: %d, outage: %f"% (distance, temp))
     
     q1t = []
+    #q1sm = []
+    distances = []
+    index = 0
+    q = Queue()
+    for distance in range(1, 12000, 400):
+        
+        p = Process(target=processParallelQ1, args=(distance, q, index)) 
+        p.start()
+        index = index +1
+        print("Lauching the thread: %d"% index)
+    p.join()
+
+    for i in range(0,30):
+        a = q.get()
+        q1sm[a[0]] = a[1]
+    
+    print(q1sm)
+
     for i in range(1, 12000, 400):
         q1t.append(Q1Theorical(i))
-    
-    return q1t
+        distances.append(i)
 
-def plotC1tTheoricalHaza():
+    return q1t, q1sm, distances
 
-    h = H1theoricalHaza()
-    q = Q1TheoricalHaza()
+def plotC1tTheoricalSimulated():
+
+    [q1th, q1sm, distance] = Q1TheoricalSimulatedHaza()
+    [h1th, h1sm] = H1theoricalSimulatedHaza()
 
     c1t = []
-    for i in range(len(h)-1):
-        c1t.append(h[i]*q[i])
+    for i in range(len(h1th)):
+        c1t.append(h1th[i]*q1th[i])
 
-    plt.plot(q, "b-", linewidth=1)
-    plt.plot(h, "r-", linewidth=1)
-    plt.plot(c1t, "g-", linewidth=1)
-    plt.xlim(1, 12000)
+    plt.plot(distance, q1th, "b-", linewidth=1)
+    plt.plot(distance, q1sm, "bo", linewidth=1)
+    plt.plot(distance, h1th, "r-", linewidth=1)
+    plt.plot(distance, h1sm, "ro")
+    plt.plot(distance, c1t, "g-", linewidth=1)
+    plt.ylim(0, 1.1)
+    #plt.legend("H1 theorical outage", "Q1 theorical outage", "H1Q1 outage")
+
     plt.show()
 if __name__== "__main__":
     
-    #plotH1theoricalHaza()
-    plotC1tTheoricalHaza()
+    #plotConsume1Day()
+    plotC1tTheoricalSimulated()
     
 
 

@@ -89,7 +89,7 @@ def lifeTimeWorkCalculator(life_time_sec, time_to_send_a_tx_ms, tx_power_in_dbm,
         work_in_idle_J = jouleCalculator(power_idle_W, time_in_idle_sec)['J']
         return work_in_idle_J
 
-    def workInRxWindow(time_receive_window_ms, time_sleep_window_ms, ):
+    def workInRxWindow(time_receive_window_ms, time_sleep_window_ms):
 
         power_sleep_W = powerCalculator(current_sleep_mA, voltage_supply)['W']
         power_receive_W = powerCalculator(current_receive_mA, voltage_supply)['W']

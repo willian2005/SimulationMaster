@@ -1,7 +1,9 @@
 import math
 
-snr_per_sf = [(7, -7.5), (8, -10), (9, -12.5), (10, -15), (11, -17.5), (12, -20)] #extraxt from datasheet
+snr_per_sf_datasheet = [(7, -7.5), (8, -10), (9, -12.5), (10, -15), (11, -17.5), (12, -20)] #extraxt from datasheet
 snr_qsf_raza_125bw = [(7, -6), (8, -9), (9, -12), (10, -15), (11, -17.5), (12, -20)] #extraxt from raza
+
+snr_per_sf = snr_qsf_raza_125bw 
 
 def loraSensitivity(sf, bw):
     """

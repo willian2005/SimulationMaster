@@ -7,7 +7,7 @@ import numpy as np
 from energyUtils import *
 from linkBudget import *
 from loraSpecific import *
-from haza import *
+from loraTheoricalSimulation import *
 import unittest
 
 
@@ -91,21 +91,38 @@ class TestUM(unittest.TestCase):
 
         snr = SNR_qsf_linear(12)
         self.assertAlmostEqual(snr, 0.01, delta=0.001)
-#Haza H1
+#Haza H1 theorical
     def testH1Theorical(self):
         outage = H1Theorical(7, 600)
-        print("outage sf7 600m %f" % outage)
+        #print("outage sf7 600m %f" % outage)
         self.assertAlmostEqual(outage, 0.99, delta=0.01)
         outage = H1Theorical(8, 2200)    
-        print("outage sf8 2200m %f" % outage)
+        #print("outage sf8 2200m %f" % outage)
         self.assertAlmostEqual(outage, 0.90, delta=0.01)
 
-#Haza Q1
-    def testQ1Theorical(self):
-        
-        for i in range(1, 12000, 400):
-            outage = Q1Theorical(i)
-            print("Q1 outage %f" % outage)
+#Haza H1 simulated
+    """ to longe to process
 
+    def testH1Simulated(self):
+        outage = H1Simulated(7, 600)
+        print("outage simulated %f" % outage)
+
+        outage = H1Simulated(8, 2200)
+        print("outage simulated %f" % outage)
+    """
+
+    def testAverageDevicesDistribuition(self):
+        devices, num_devices_per_cicle = averageDevicesDistribuition(500)
+        
+        self.assertEqual(num_devices_per_cicle, [14, 42, 69, 97, 125, 153])
+
+    def testDevicesDistribuition(self):
+        randomDevicesDistribuition(500)
+
+    
+    def testQ1Simulated(self):
+        outage = Q1Simulated(8000)
+        self.assertAlmostEqual(outage, 10)
+    
 if __name__ == '__main__':
     unittest.main()
