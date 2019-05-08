@@ -11,8 +11,8 @@ def __deviceDistribuition(number_of_devices, bottom_radius, higher_radius):
     for i in range(number_of_devices):
         distance_from_center = 2*higher_radius 
         while(distance_from_center < bottom_radius or distance_from_center > higher_radius):
-            x = randint(x_central - bottom_radius, higher_radius + x_central)
-            y = randint(y_central - bottom_radius, higher_radius + y_central)
+            x = randint(0, higher_radius + x_central)
+            y = randint(0, higher_radius + y_central)
             distance_from_center = math.sqrt(abs(x - x_central)**2 + abs(y - y_central)**2)
         
         devices_list_possitions.append((x, y, distance_from_center))
@@ -63,7 +63,7 @@ def averageDevicesDistribuition(number_of_devices):
         circular_area = external_circle - internal_circle
         number_of_devices_per_circle = round((circular_area/total_area)*number_of_devices)
         devices_per_circle.append(number_of_devices_per_circle)
-        devices_list_possitions.append(__deviceDistribuition(number_of_devices_per_circle, i+1, i+step))
+        devices_list_possitions.extend(__deviceDistribuition(number_of_devices_per_circle, i+1, i+step))
 
     return devices_list_possitions, devices_per_circle
 

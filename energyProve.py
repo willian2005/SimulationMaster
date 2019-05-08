@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from energyUtils import *
 from loraTheoricalSimulation import *
+from devicesDistribuition import *
 
 calc_semtech_power_mw = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
 calc_semtech_power_dbm = [22, 23, 24, 24, 24, 25, 25, 25, 25, 26, 31, 32, 34, 35, 44, 82, 85, 90, 105, 115, 125]
@@ -69,7 +70,43 @@ def H1theoricalSimulatedHaza():
 
     return h1tl, h1sm
 
+def plotDeviceDistribuition():
+    
+    devices_list, devices_per_circle  = averageDevicesDistribuition(500)
 
+    for i in range(len(devices_list)):
+        if devices_list[i][2] < 2000:
+            plt.scatter(devices_list[i][0], devices_list[i][1], c="blue", linewidths=0.01)
+        elif devices_list[i][2] < 4000: 
+            plt.scatter(devices_list[i][0], devices_list[i][1], c="green", linewidths=0.01)
+        elif devices_list[i][2] < 6000:
+            plt.scatter(devices_list[i][0], devices_list[i][1], c="yellow", linewidths=0.01)
+        elif devices_list[i][2] < 8000:
+            plt.scatter(devices_list[i][0], devices_list[i][1], c="pink", linewidths=0.01)
+        elif devices_list[i][2] < 10000:
+            plt.scatter(devices_list[i][0], devices_list[i][1], c="black", linewidths=0.01)
+        else:
+            plt.scatter(devices_list[i][0], devices_list[i][1], c="brown", linewidths=0.01)
+
+    plt.scatter(12000, 12000, c="red")
+    plt.ylim(0, 24000)
+    plt.xlim(0, 24000)
+    #need because of the legend
+    plt.scatter(-1, -1, c="red", linewidths=0.01, label='Gateway')
+    plt.scatter(-1, -1, c="blue", linewidths=0.01, label='SF7')
+    plt.scatter(-1, -1, c="green", linewidths=0.01, label='SF8')
+    plt.scatter(-1, -1, c="yellow", linewidths=0.01, label='SF9')
+    plt.scatter(-1, -1, c="pink", linewidths=0.01, label='SF10')
+    plt.scatter(-1, -1, c="black", linewidths=0.01, label='SF11')
+    plt.scatter(-1, -1, c="brown", linewidths=0.01, label='SF12')
+
+    for i in  range(0, 14000, 2000):
+        circle= plt.Circle((12000,12000), fill=False, radius= i)
+        ax=plt.gca()
+        ax.add_patch(circle)
+    
+    plt.legend(loc='upper right')
+    plt.show()
 
 def Q1TheoricalSimulatedHaza():
     
@@ -125,8 +162,8 @@ def plotC1tTheoricalSimulated():
     plt.show()
 if __name__== "__main__":
     
-    #plotConsume1Day()
-    plotC1tTheoricalSimulated()
+    plotDeviceDistribuition()
+    #plotC1tTheoricalSimulated()
     
 
 
