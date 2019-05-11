@@ -14,8 +14,8 @@ from devicesDistribuition import *
 
 
 REPTION_TIMES = 10000
-REPTION_TIMES_PER_INTERACTION_Q1_SIM = 400
-REPTION_TIMES_CYCLES = 400
+REPTION_TIMES_PER_INTERACTION_Q1_SIM = 100
+REPTION_TIMES_CYCLES = 100
 
 DEVICES_TOTAL = 500
 
@@ -44,18 +44,9 @@ def H1Simulated(sf, distance, n=2.75, power_tx=19, bw = 125e3):
 
     return sum/REPTION_TIMES
 
+def __Q1OutageProbability(distance, device_with_same_sf, n=2.75):
 
-def Q1Simulated(distance, number_of_devices = 500, n=2.75):
-    """
-        number_of_devices: is the number of devices in the same circus and same SF, 500/6 = 83
-    """
     rx_success_total = 0.0
-
-    #set the number of devices in the same SF (radius)
-    device_list, devices_per_cicle = averageDevicesDistribuition(number_of_devices)
-    [l0, l1, circul] = radiusPerDistance(distance)
-    number_of_devices_same_sf = devices_per_cicle[circul-1]
-
     for cycle in range(REPTION_TIMES_CYCLES):
 
         devices_in_tx = 0
@@ -64,7 +55,7 @@ def Q1Simulated(distance, number_of_devices = 500, n=2.75):
         rx_success = 0.0
         
         #get the number of devices that is transmitting in the same time
-        for i in range(number_of_devices_same_sf):
+        for i in range(device_with_same_sf):
             if randint(1, 100) == time_using_channel:
                 devices_in_tx = devices_in_tx + 1
         if(devices_in_tx > 0):
@@ -94,9 +85,7 @@ def Q1Simulated(distance, number_of_devices = 500, n=2.75):
                     #bool_rx_success = 0 if main_device_rx_signal < interferent_device_rx_signal else 1
                     if main_device_rx_signal < (interferent_device_rx_signal):
                         bool_rx_success = 0
-                        break
-                    
-                
+                        break            
                 #consider the sum of all interferents
                 """interferent_device_rx_signal = 0
                 for a in range(devices_in_tx):
@@ -115,6 +104,38 @@ def Q1Simulated(distance, number_of_devices = 500, n=2.75):
     
     return (rx_success_total/REPTION_TIMES_CYCLES)
 
+
+
+def Q1WithShiftedGateway(distance, number_of_devices, gateway_possition):
+    """
+    gateway_possition = (x,y)
+    """
+
+    multiplication_factor = 50
+    sf_virtual_point = getSF(distance)
+    devices_list, devices_per_circle  = averageDevicesDistribuition(number_of_devices*multiplication_factor, gateway_possition)
+    
+    devices = [device for device in devices_list if device[3]  == sf_virtual_point ]
+    device_same_sf = round(len(devices)/multiplication_factor)
+    print(sf_virtual_point + " distance: " + str(distance) + "devices same sf " + str(device_same_sf))
+
+
+    return __Q1OutageProbability(distance, device_same_sf)
+
+
+def Q1Simulated(distance, number_of_devices = 500, n=2.75):
+    """
+        number_of_devices: is the number of devices in the same circus and same SF, 500/6 = 83
+    """
+    rx_success_total = 0.0
+
+    #set the number of devices in the same SF (radius)
+    device_list, devices_per_cicle = averageDevicesDistribuition(number_of_devices)
+    [l0, l1, circul] = radiusPerDistance(distance)
+    number_of_devices_same_sf = devices_per_cicle[circul-1]
+
+    return __Q1OutageProbability(distance, number_of_devices_same_sf, n)
+    
 def Q1Theorical(distance, number_of_devices = 500, n=2.75, power_tx=19):
     
     R = 12000

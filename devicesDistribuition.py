@@ -1,11 +1,12 @@
 import math 
 from random import randint
+from loraSpecific import getSF
 
 RADIUS = 12000 #don't change this parameter
 x_central = 12000 #don't change this parameter
 y_central = 12000 #don't change this parameter
 
-def __deviceDistribuition(number_of_devices, bottom_radius, higher_radius):
+def __deviceDistribuition(number_of_devices, bottom_radius, higher_radius, gateway_possition = (x_central, y_central)):
 
     devices_list_possitions = []
     for i in range(number_of_devices):
@@ -15,11 +16,10 @@ def __deviceDistribuition(number_of_devices, bottom_radius, higher_radius):
             y = randint(0, higher_radius + y_central)
             distance_from_center = math.sqrt(abs(x - x_central)**2 + abs(y - y_central)**2)
         
-        devices_list_possitions.append((x, y, distance_from_center))
-    return devices_list_possitions    
-        
-
-
+        distance_from_gateway = math.sqrt(abs(x - gateway_possition[0])**2 + abs(y - gateway_possition[1])**2)
+        sf = getSF(distance_from_gateway)
+        devices_list_possitions.append((x, y, distance_from_gateway, sf))
+    return devices_list_possitions      
 
 def radiusPerDistance(distance):
     """
@@ -51,7 +51,7 @@ def radiusPerDistance(distance):
         in_radius = 6
     return l0, l1, in_radius
 
-def averageDevicesDistribuition(number_of_devices):
+def averageDevicesDistribuition(number_of_devices, gateway_possition = (x_central, y_central)):
 
     total_area = math.pi*(RADIUS**2)
     step = 2000
@@ -63,7 +63,7 @@ def averageDevicesDistribuition(number_of_devices):
         circular_area = external_circle - internal_circle
         number_of_devices_per_circle = round((circular_area/total_area)*number_of_devices)
         devices_per_circle.append(number_of_devices_per_circle)
-        devices_list_possitions.extend(__deviceDistribuition(number_of_devices_per_circle, i+1, i+step))
+        devices_list_possitions.extend(__deviceDistribuition(number_of_devices_per_circle, i+1, i+step, gateway_possition))
 
     return devices_list_possitions, devices_per_circle
 
