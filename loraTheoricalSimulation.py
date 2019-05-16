@@ -14,8 +14,8 @@ from devicesDistribuition import *
 
 
 REPTION_TIMES = 10000
-REPTION_TIMES_PER_INTERACTION_Q1_SIM = 100
-REPTION_TIMES_CYCLES = 100
+REPTION_TIMES_PER_INTERACTION_Q1_SIM = 1000
+REPTION_TIMES_CYCLES = 1000
 
 DEVICES_TOTAL = 500
 
@@ -111,7 +111,7 @@ def Q1WithShiftedGateway(distance, number_of_devices, gateway_possition):
     gateway_possition = (x,y)
     """
 
-    multiplication_factor = 50
+    multiplication_factor = 1000
     sf_virtual_point = getSF(distance)
     devices_list, devices_per_circle  = averageDevicesDistribuition(number_of_devices*multiplication_factor, gateway_possition)
     
