@@ -65,6 +65,52 @@ def plotConsume1Day():
     plt.grid()
     plt.show()
 
+def H1graphics(max_distance = 12000):
+    
+    h1 = [0]*6
+    
+    for i in range(6):
+        h1[i] = []
+    distance = []
+    
+    for i in range(1, max_distance, 400):
+        
+        h1[0].append(H1Theorical(7, i))
+        h1[1].append(H1Theorical(8, i))
+        h1[2].append(H1Theorical(9, i))
+        h1[3].append(H1Theorical(10, i))
+        h1[4].append(H1Theorical(11, i))
+        h1[5].append(H1Theorical(12, i))
+        distance.append(i)
+
+    plt.plot(distance, h1[0], "b-" ,label = "SF7", linewidth=1)
+    plt.plot(distance, h1[1], "g-" ,label = "SF8",linewidth=1)
+    plt.plot(distance, h1[2], "y-" ,label = "SF9",linewidth=1)
+    plt.plot(distance, h1[3], "r-" ,label = "SF10",linewidth=1)
+    plt.plot(distance, h1[4], "m-" ,label = "SF11",linewidth=1)    
+    plt.plot(distance, h1[5], "k-" ,label = "SF12",linewidth=1)
+    plt.legend(loc='upper right')
+    plt.title("Capacidade da comunicação H1")
+    plt.xlabel("Distancia")
+    plt.ylabel("Capacidade")
+    plt.show()
+
+def Q1Graphic():
+    
+    q1 = []
+    number_of_devices = []
+
+    for nd in range(2, 200, 3):
+        temp = Q1OutageProbability(3000, nd)
+        number_of_devices.append(nd)
+        q1.append(temp)
+        print("Devices %d - capacidade %f"%(nd, temp))
+    plt.plot(number_of_devices, q1, "b-")
+    plt.title("Capacidade de comunicação Q1")
+    plt.xlabel("Numero de dispositivos")
+    plt.ylabel("Capacidade")
+    plt.show()
+
 def H1theoricalSimulatedHaza(max_distance = 12000):
     
     h1tl = []
@@ -257,7 +303,9 @@ def plotC1tShiftedGateway(max_distance = 14000, gateway_possition= (12000,12000)
 
 if __name__== "__main__":
 
-    printTOA()    
+    #printTOA()   
+    Q1Graphic ()
+    #H1graphics()
 """
     max_distance = 12000
     gateway= (12000,12000)

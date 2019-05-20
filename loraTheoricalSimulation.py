@@ -44,7 +44,7 @@ def H1Simulated(sf, distance, n=2.75, power_tx=19, bw = 125e3):
 
     return sum/REPTION_TIMES
 
-def __Q1OutageProbability(distance, device_with_same_sf, n=2.75):
+def Q1OutageProbability(distance, device_with_same_sf, n=2.75):
 
     rx_success_total = 0.0
     for cycle in range(REPTION_TIMES_CYCLES):
@@ -120,7 +120,7 @@ def Q1WithShiftedGateway(distance, number_of_devices, gateway_possition):
     print(sf_virtual_point + " distance: " + str(distance) + "devices same sf " + str(device_same_sf))
 
 
-    return __Q1OutageProbability(distance, device_same_sf)
+    return Q1OutageProbability(distance, device_same_sf)
 
 
 def Q1Simulated(distance, number_of_devices = 500, n=2.75):
@@ -134,7 +134,7 @@ def Q1Simulated(distance, number_of_devices = 500, n=2.75):
     [l0, l1, circul] = radiusPerDistance(distance)
     number_of_devices_same_sf = devices_per_cicle[circul-1]
 
-    return __Q1OutageProbability(distance, number_of_devices_same_sf, n)
+    return Q1OutageProbability(distance, number_of_devices_same_sf, n)
     
 def Q1Theorical(distance, number_of_devices = 500, n=2.75, power_tx=19):
     
