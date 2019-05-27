@@ -11,7 +11,7 @@ def friisEquation(distance, n =2.75, fc = 868e6):
         link budget need used to transmit the information
     """
     
-    c = 3e8        # m/s^2 - c
-    l = c/fc      # meters - wavelength
-    g = math.pow((l/((4*math.pi)*distance)), n)
+    c = float(3e8)        # m/s^2 - c
+    l = float(c/fc)      # meters - wavelength
+    g = math.pow( float(l/((4*math.pi)*distance)), float(n))
     return g

@@ -1,6 +1,6 @@
 import math 
 from random import randint
-from loraSpecific import getSF
+from loraSpecific import *
 
 RADIUS = 12000 #don't change this parameter
 x_central = 12000 #don't change this parameter
@@ -21,40 +21,32 @@ def __deviceDistribuition(number_of_devices, bottom_radius, higher_radius, gatew
         devices_list_possitions.append((x, y, distance_from_gateway, sf))
     return devices_list_possitions      
 
-def radiusPerDistance(distance):
+def radiusPerDistance(distance, max_distance):
     """
         Return the minimum radius and maximum radius to the same SF
     """    
-    if distance < 2000:
-        l0 = 1
-        l1 = 2000   
-        in_radius = 1 
-    elif distance < 4000: 
-        l0 = 2000
-        l1 = 4000
-        in_radius = 2
-    elif distance < 6000:
-        l0 = 4000
-        l1 = 6000
-        in_radius = 3
-    elif distance < 8000:
-        l0 = 6000
-        l1 = 8000
-        in_radius = 4
-    elif distance < 10000:
-        l0 = 8000
-        l1 = 10000
-        in_radius = 5
-    else:
-        l0 = 10000
-        l1 = 12000
-        in_radius = 6
+    l0 = last_distance_of_sf[-1]
+    l1 = max_distance
+    in_radius = 0
+    for i in range(len(last_distance_of_sf)):
+
+        if distance < last_distance_of_sf[i]:
+
+            if(i == 0):
+                l0 = 1
+            else:
+                l0 = last_distance_of_sf[i - 1]
+
+            l1 = last_distance_of_sf[i]
+            in_radius = i +1            
+            break
+    #print("i %d - distance %d - l0 %d - l1 %d - in_radius %d"% (i, distance,  l0, l1, in_radius)) 
     return l0, l1, in_radius
 
 def averageDevicesDistribuition(number_of_devices, gateway_possition = (x_central, y_central)):
 
     total_area = math.pi*(RADIUS**2)
-    step = 2000
+    step = 1000
     devices_list_possitions = []
     devices_per_circle = []
     for i in range(0, RADIUS, step):

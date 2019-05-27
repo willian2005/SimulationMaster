@@ -20,7 +20,7 @@ sleep_power_in_ma = 0.001*voltage_supply # 1uA
 
 def csvSaveData(gateway_possition, distance, h1sm, q1sm, c1t):
 
-    text_name = "output_data/CYCLES_" + str(REPTION_TIMES_CYCLES) + "_PER_INTERACTION_" + str(REPTION_TIMES_PER_INTERACTION_Q1_SIM) + "_Gx_" + str(gateway_possition[0]) + "_Gy_" + str(gateway_possition[1]) + ".py"
+    text_name = "output_data/CYCLES_" + str(REPTION_TIMES_CYCLES) + "_PER_INTERACTION_" + str(REPTION_TIMES_PER_INTERACTION_Q1_SIM) + "_Gx_" + str(gateway_possition[0]) + "_Gy_" + str(gateway_possition[1]) + "_TOA_M_" + str(TOA_METHOD) + ".py"
     file = open(text_name, 'w')
 
     line = "distances_gx_" + str(gateway_possition[0]) + "_gy_" + str(gateway_possition[1]) + " = " + str(distance) + "\n" 
@@ -38,10 +38,14 @@ def plotCalcSemtechPower_mA_by_dbm():
     plt.ylabel('power in dBm')
     plt.show()
 def printTOA():
-
+    
+    sf_time_per_package = []
     for i in range(7,13):
-        sf_time_per_package = get_toa(25, i, enable_auto_ldro=False, enable_eh=False, enable_crc=False)['t_payload']
-        print("O tempo no ar SF%d é de: %fms e taxa de dados %f bytes/seg"%(i, sf_time_per_package, ((1000/(sf_time_per_package*100))*25)))
+        sf_time_per_package.append(get_toa(25, i)['t_packet'])
+        #print("O tempo no ar SF%d é de: %fms e taxa de dados %f bytes/seg"%(i, sf_time_per_package, ((1000/(sf_time_per_package*100))*25)))
+    print(sf_time_per_package)
+    for i in range(len(sf_time_per_package)):
+        print("SF%d - quantidade de vezes maior %f"% (i+7 ,sf_time_per_package[len(sf_time_per_package)-1]/sf_time_per_package[i]) )
 
 def plotConsume1Day():
 
@@ -115,35 +119,21 @@ def H1theoricalSimulatedHaza(max_distance = 12000):
     
     h1tl = []
     h1sm = []
-    for i in range(1, max_distance, 400):
-        if i < 2000:
-            h1tl.append(H1Theorical(7, i))
-            h1sm.append(H1Simulated(7, i))
-        elif i < 4000: 
-            h1tl.append(H1Theorical(8, i))
-            h1sm.append(H1Simulated(8, i))
-        elif i < 6000:
-            h1tl.append(H1Theorical(9, i))
-            h1sm.append(H1Simulated(9, i))
-        elif i < 8000:
-            h1tl.append(H1Theorical(10, i))
-            h1sm.append(H1Simulated(10, i))
-        elif i < 10000:
-            h1tl.append(H1Theorical(11, i))
-            h1sm.append(H1Simulated(11, i))
-        else:
-            h1tl.append(H1Theorical(12, i))
-            h1sm.append(H1Simulated(12, i))
 
+    for i in range(1, max_distance, 400):
+        [sf, int_sf] = getSF(i)
+        h1tl.append(H1Theorical(int_sf, i))
+        h1sm.append(H1Simulated(int_sf, i))
+    
     return h1tl, h1sm
 
-def plotShiftedDeviceDistribuition(max_distance = 12000, gateway= (12000,12000)):
+def Q1ShiftedGateway(max_distance = 12000, gateway= (12000,12000), number_of_devices = 500):
 
     q1sm = np.zeros(round(max_distance/400))
     gateway_possition = gateway
 
     def processParallelQ1(distance, q, index):
-        temp = Q1WithShiftedGateway(distance, 500, gateway_possition)
+        temp = Q1WithShiftedGateway(distance, number_of_devices, gateway_possition, max_distance)
         q.put((index, temp))
         print("the distance: %d, outage: %f"% (distance, temp))
     
@@ -167,37 +157,37 @@ def plotShiftedDeviceDistribuition(max_distance = 12000, gateway= (12000,12000))
 
     
 
-def plotDefaultDeviceDistribuition(gateway = (12000,12000)):
+def plotDefaultDeviceDistribuition(gateway = (12000,12000), number_of_devices = 500):
     
     multiplication_factor = 1000
-    devices_list, devices_per_circle  = averageDevicesDistribuition(500*multiplication_factor, gateway)
+    devices_list, devices_per_circle  = averageDevicesDistribuition(number_of_devices*multiplication_factor, gateway)
 
     SF_list = ["SF7", "SF8", "SF9", "SF10", "SF11", "SF12"]
     SFs = []
     
     print("Numero de dispositivos para o gateway em x: %d - y: %d"%(gateway[0], gateway[1]))
     for i in range(len(SF_list)):
-        devices = [device for device in devices_list if device[3]  == SF_list[i] ] 
+        devices = [device for device in devices_list if device[3][0]  == SF_list[i] ] 
         SFs.append(round(len(devices)/multiplication_factor))
         print("%s - %d, "%(SF_list[i], SFs[i]))    
     
-    devices_list, devices_per_circle  = averageDevicesDistribuition(500, gateway)
+    devices_list, devices_per_circle  = averageDevicesDistribuition(number_of_devices, gateway)
     
     
     plt.figure()
     #print(devices_list)
     for i in range(len(devices_list)):
-        if devices_list[i][2] < 2000:
+        if devices_list[i][3][0] == "SF7":
             plt.scatter(devices_list[i][0], devices_list[i][1], c="blue", linewidths=0.01)
-        elif devices_list[i][2] < 4000: 
+        elif devices_list[i][3][0] == "SF8": 
             plt.scatter(devices_list[i][0], devices_list[i][1], c="green", linewidths=0.01)
-        elif devices_list[i][2] < 6000:
+        elif devices_list[i][3][0] == "SF9":
             plt.scatter(devices_list[i][0], devices_list[i][1], c="yellow", linewidths=0.01)
-        elif devices_list[i][2] < 8000:
+        elif devices_list[i][3][0] == "SF10":
             plt.scatter(devices_list[i][0], devices_list[i][1], c="pink", linewidths=0.01)
-        elif devices_list[i][2] < 10000:
+        elif devices_list[i][3][0] == "SF11":
             plt.scatter(devices_list[i][0], devices_list[i][1], c="black", linewidths=0.01)
-        else:
+        elif devices_list[i][3][0] == "SF12":
             plt.scatter(devices_list[i][0], devices_list[i][1], c="brown", linewidths=0.01)
 
     
@@ -221,7 +211,7 @@ def plotDefaultDeviceDistribuition(gateway = (12000,12000)):
     """
     plt.legend(loc='upper right')
     plt.title("Distribuição dos dispositivos")
-    plt.savefig("output_data/device_distribuition_CYCLES_" + str(REPTION_TIMES_CYCLES) + "_PER_INTERACTION_" + str(REPTION_TIMES_PER_INTERACTION_Q1_SIM) + "_Gx_" + str(gateway[0]) + "_Gy_" + str(gateway[1]) + ".png")
+    plt.savefig("output_data/device_distribuition_CYCLES_" + str(REPTION_TIMES_CYCLES) + "_PER_INTERACTION_" + str(REPTION_TIMES_PER_INTERACTION_Q1_SIM) + "_Gx_" + str(gateway[0]) + "_Gy_" + str(gateway[1]) + "_TOA_M_" + str(TOA_METHOD) + ".png")
 
 def Q1TheoricalSimulatedHaza():
     
@@ -276,12 +266,12 @@ def plotC1tTheoricalSimulated():
 
     plt.show()
 
-def plotC1tShiftedGateway(max_distance = 14000, gateway_possition= (12000,12000)):
+def plotC1tShiftedGateway(max_distance = 12000, gateway_possition= (12000,12000), number_of_devices=500):
     
-    [q1sm, distance] = plotShiftedDeviceDistribuition(max_distance, gateway_possition)
+    [q1sm, distance] = Q1ShiftedGateway(max_distance, gateway_possition, number_of_devices)
     [h1th, h1sm] = H1theoricalSimulatedHaza(max_distance)
 
-    plotDefaultDeviceDistribuition( gateway_possition)
+    plotDefaultDeviceDistribuition( gateway_possition, number_of_devices)
     c1t = []
     for i in range(len(h1sm)):
         c1t.append(q1sm[i]*h1sm[i])
@@ -294,7 +284,7 @@ def plotC1tShiftedGateway(max_distance = 14000, gateway_possition= (12000,12000)
 
     plt.legend(loc='upper right')
     plt.title("Gateway em X: " + str(gateway_possition[0]) + " Y: " + str(gateway_possition[1]) )
-    plt.savefig("output_data/plot_CYCLES_" + str(REPTION_TIMES_CYCLES) + "_PER_INTERACTION_" + str(REPTION_TIMES_PER_INTERACTION_Q1_SIM) + "_Gx_" + str(gateway_possition[0]) + "_Gy_" + str(gateway_possition[1]) + ".png")
+    plt.savefig("output_data/plot_CYCLES_" + str(REPTION_TIMES_CYCLES) + "_PER_INTERACTION_" + str(REPTION_TIMES_PER_INTERACTION_Q1_SIM) + "_Gx_" + str(gateway_possition[0]) + "_Gy_" + str(gateway_possition[1]) + "_TOA_M_" + str(TOA_METHOD) + ".png")
 
     h1_list = [float(h1) for h1 in h1sm]
     q1_list = [float(q1) for q1 in q1sm]
@@ -304,13 +294,15 @@ def plotC1tShiftedGateway(max_distance = 14000, gateway_possition= (12000,12000)
 if __name__== "__main__":
 
     #printTOA()   
-    Q1Graphic ()
+    #Q1Graphic ()
     #H1graphics()
-"""
+
+
+    
     max_distance = 12000
     gateway= (12000,12000)
-    plotC1tShiftedGateway(max_distance, gateway)
-
+    plotC1tShiftedGateway(max_distance, gateway, 4000)
+    """
     max_distance = 14000
     gateway= (10000,12000)
     plotC1tShiftedGateway(max_distance, gateway)
@@ -326,14 +318,14 @@ if __name__== "__main__":
     max_distance = 20000
     gateway= (4000,12000)
     plotC1tShiftedGateway(max_distance, gateway)
-"""
-"""
-    plotDefaultDeviceDistribuition((12000,12000))
+    """
+    """
+    plotDefaultDeviceDistribuition((12000,12000), 4000)
     plotDefaultDeviceDistribuition((10000,12000))
     plotDefaultDeviceDistribuition((8000,12000))
     plotDefaultDeviceDistribuition((6000,12000))
     plotDefaultDeviceDistribuition((4000,12000))
-"""
+    """
     #plotDefaultDeviceDistribuition()
 
     #plotSavedData()

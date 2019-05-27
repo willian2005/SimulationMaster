@@ -5,22 +5,26 @@ snr_qsf_raza_125bw = [(7, -6), (8, -9), (9, -12), (10, -15), (11, -17.5), (12, -
 
 snr_per_sf = snr_qsf_raza_125bw 
 
+
+last_distance_of_sf = [2000, 4000, 6000, 8000, 10000, 12000]
+#last_distance_of_sf = [2200, 3000, 4000, 5000, 6000, 7800]
+sfs = ["SF7", "SF8", "SF9", "SF10", "SF11", "SF12"]
+
 def getSF(distance):
 
-    if distance < 2000:
-        sf = "SF7"
-    elif distance < 4000: 
-        sf = "SF8"
-    elif distance < 6000:
-        sf = "SF9"
-    elif distance < 8000:
-        sf = "SF10"
-    elif distance < 10000:
-        sf = "SF11"
-    else:
-        sf = "SF12"
+    sf = "SF0"
+    int_sf = 0
+    
+    for i in range(len(last_distance_of_sf)):
+        if distance < last_distance_of_sf[i]:
+            sf = sfs[i]
+            int_sf = 7+i
+            break
+    if distance > last_distance_of_sf[-1]:
+        sf =  "SF12"
+        int_sf = 12  
 
-    return sf
+    return sf, int_sf
     
 def loraSensitivity(sf, bw):
     """
