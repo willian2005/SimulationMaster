@@ -1,5 +1,6 @@
 import math 
 from random import randint
+import numpy as np
 from loraSpecific import *
 
 RADIUS = 12000 #don't change this parameter
@@ -7,9 +8,10 @@ x_central = 12000 #don't change this parameter
 y_central = 12000 #don't change this parameter
 
 def __deviceDistribuition(number_of_devices, bottom_radius, higher_radius, gateway_possition = (x_central, y_central)):
-
+ 
     devices_list_possitions = []
     for i in range(number_of_devices):
+        """
         distance_from_center = 2*higher_radius 
         while(distance_from_center < bottom_radius or distance_from_center > higher_radius):
             x = randint(0, higher_radius + x_central)
@@ -17,6 +19,15 @@ def __deviceDistribuition(number_of_devices, bottom_radius, higher_radius, gatew
             distance_from_center = math.sqrt(abs(x - x_central)**2 + abs(y - y_central)**2)
         
         distance_from_gateway = math.sqrt(abs(x - gateway_possition[0])**2 + abs(y - gateway_possition[1])**2)
+        """
+        
+        hypotenuse = randint(bottom_radius, higher_radius)
+        degree = randint(0, 360)
+        rad = np.radians(degree)
+        x = np.cos(rad)*hypotenuse + x_central
+        y = np.sin(rad)*hypotenuse + y_central
+        distance_from_gateway = hypotenuse
+        
         sf = getSF(distance_from_gateway)
         devices_list_possitions.append((x, y, distance_from_gateway, sf))
     return devices_list_possitions      
@@ -59,7 +70,7 @@ def averageDevicesDistribuition(number_of_devices, gateway_possition = (x_centra
 
     return devices_list_possitions, devices_per_circle
 
-def randomDevicesDistribuition(number_of_devices):
+def randomDevicesDistribuition(number_of_devices, gateways):
 
     devices_list_possitions = []
 

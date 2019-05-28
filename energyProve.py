@@ -155,11 +155,13 @@ def Q1ShiftedGateway(max_distance = 12000, gateway= (12000,12000), number_of_dev
     
     return q1sm, distances
 
+def plotDefaultDeviceDistribuitionMultiplesGateway(gateway = (12000,12000), number_of_devices = 500):
     
+    devices_list, devices_per_circle  = averageDevicesDistribuition(number_of_devices, gateway)
 
-def plotDefaultDeviceDistribuition(gateway = (12000,12000), number_of_devices = 500):
+def plotDefaultDeviceDistribuition(gateway = (12000,12000), number_of_devices = 4000):
     
-    multiplication_factor = 1000
+    multiplication_factor = 1
     devices_list, devices_per_circle  = averageDevicesDistribuition(number_of_devices*multiplication_factor, gateway)
 
     SF_list = ["SF7", "SF8", "SF9", "SF10", "SF11", "SF12"]
@@ -297,11 +299,12 @@ if __name__== "__main__":
     #Q1Graphic ()
     #H1graphics()
 
-
+    plotDefaultDeviceDistribuition()
     
-    max_distance = 12000
-    gateway= (12000,12000)
-    plotC1tShiftedGateway(max_distance, gateway, 4000)
+    #max_distance = 12000
+    #gateway= [(6000,12000), ((18000,12000)) ]
+    plotDefaultDeviceDistribuitionMultiplesGateway((12000, 12000), 4000)
+
     """
     max_distance = 14000
     gateway= (10000,12000)
