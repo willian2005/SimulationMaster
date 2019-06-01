@@ -3,11 +3,11 @@ from random import randint
 import numpy as np
 from loraSpecific import *
 
-RADIUS = 12000 #don't change this parameter
-x_central = 12000 #don't change this parameter
-y_central = 12000 #don't change this parameter
+RADIUS = 12000
+x_central = 12000 
+y_central = 12000 
 
-def __deviceDistribuition(number_of_devices, bottom_radius, higher_radius, gateway_possition = (x_central, y_central)):
+def __deviceDistribuition(number_of_devices, bottom_radius, higher_radius):
  
     devices_list_possitions = []
     for i in range(number_of_devices):
@@ -26,11 +26,44 @@ def __deviceDistribuition(number_of_devices, bottom_radius, higher_radius, gatew
         rad = np.radians(degree)
         x = np.cos(rad)*hypotenuse + x_central
         y = np.sin(rad)*hypotenuse + y_central
-        distance_from_gateway = hypotenuse
         
-        sf = getSF(distance_from_gateway)
-        devices_list_possitions.append((x, y, distance_from_gateway, sf))
+        devices_list_possitions.append([[x, y]])
     return devices_list_possitions      
+
+def __setGatewayDistance(device_list, gateway_list):
+
+    for idx, device in enumerate(device_list):
+        distances = []
+        for gateway_possition in gateway_list:
+            distance = math.sqrt(abs(getDeviceX(device) - gateway_possition[0])**2 + abs( getDeviceY(device) - gateway_possition[1])**2)
+            distances.append(distance)
+        device = device + [distances]
+        device_list[idx] = device
+    return device_list
+
+#in this function the device_list should have the gateway possition
+def __setSf(device_list):
+
+    for idx, device in enumerate(device_list):
+        sf = getSF(min(getDeviceDistancesFromGateways(device)))    
+        device = device + [sf]
+        device_list[idx] = device
+    return device_list
+
+def getDeviceSFName(device):
+    return device[2][0]
+
+def getDeviceSFNumber(device):
+    return device[2][1]
+    
+def getDeviceX(device):
+    return device[0][0]
+
+def getDeviceY(device):
+    return device[0][1]
+
+def getDeviceDistancesFromGateways(device):
+    return device[1]
 
 def radiusPerDistance(distance, max_distance):
     """
@@ -54,10 +87,10 @@ def radiusPerDistance(distance, max_distance):
     #print("i %d - distance %d - l0 %d - l1 %d - in_radius %d"% (i, distance,  l0, l1, in_radius)) 
     return l0, l1, in_radius
 
-def averageDevicesDistribuition(number_of_devices, gateway_possition = (x_central, y_central)):
+def averageDevicesDistribuition(number_of_devices, gateway_possition = [(x_central, y_central)]):
 
     total_area = math.pi*(RADIUS**2)
-    step = 1000
+    step = 2000
     devices_list_possitions = []
     devices_per_circle = []
     for i in range(0, RADIUS, step):
@@ -66,7 +99,10 @@ def averageDevicesDistribuition(number_of_devices, gateway_possition = (x_centra
         circular_area = external_circle - internal_circle
         number_of_devices_per_circle = round((circular_area/total_area)*number_of_devices)
         devices_per_circle.append(number_of_devices_per_circle)
-        devices_list_possitions.extend(__deviceDistribuition(number_of_devices_per_circle, i+1, i+step, gateway_possition))
+        circle_device_distribuition = __deviceDistribuition(number_of_devices_per_circle, i+1, i+step)
+        circle_device_distribuition = __setGatewayDistance(circle_device_distribuition, gateway_possition)
+        circle_device_distribuition = __setSf(circle_device_distribuition)
+        devices_list_possitions.extend(circle_device_distribuition)
 
     return devices_list_possitions, devices_per_circle
 

@@ -24,7 +24,7 @@ def getSF(distance):
         sf =  "SF12"
         int_sf = 12  
 
-    return sf, int_sf
+    return [sf, int_sf]
     
 def loraSensitivity(sf, bw):
     """
