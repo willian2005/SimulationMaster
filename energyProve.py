@@ -127,7 +127,7 @@ def H1theoricalSimulatedHaza(max_distance = 12000):
     
     return h1tl, h1sm
 
-def Q1ShiftedGateway(max_distance = 12000, gateway= (12000,12000), number_of_devices = 500):
+def Q1ShiftedGateway(max_distance = 12000, gateway= [(12000,12000)], number_of_devices = 500):
 
     q1sm = np.zeros(round(max_distance/400))
     gateway_possition = gateway
@@ -155,52 +155,53 @@ def Q1ShiftedGateway(max_distance = 12000, gateway= (12000,12000), number_of_dev
     
     return q1sm, distances
 
-def Q1MultiplesGateway(gateways = [(6000,12000), (18000, 12000)], number_of_devices = 500):
+def plotQ1MultiplesGateway(gateways = [(6000,12000), (18000, 12000)], number_of_devices = 4000):
 
-    devices_list, devices_per_circle  = averageDevicesDistribuition(number_of_devices, gateways)
-    devices_list_to_be_analized, devices_per_circle_to_be_analized  = averageDevicesDistribuition(number_of_devices/10, gateways)
+    devices_to_be_analized = DeviceDistribuition()
+
+    devices_to_be_analized.averageDevicesDistribuition(50, gateways)
+    
+    number_of_interferents = number_of_devices
+
+    Q1MultiplesGateway(devices_to_be_analized, number_of_interferents, gateways)
+
     #debug
     #for device in devices_list:
     #    print(getDeviceDistancesFromGateways(device))
     #    print("x:%d - y:%d"%(getDeviceX(device), getDeviceY(device)))
     #print(devices_per_circle)
     
-    
+
     
     return
 
 def plotDefaultDeviceDistribuition(gateways = [(6000,12000), (18000, 12000)], number_of_devices = 4000):
     
-    multiplication_factor = 1
-    devices_list, devices_per_circle  = averageDevicesDistribuition(number_of_devices*multiplication_factor, gateways)
-
+    devices = DeviceDistribuition()
+    devices.averageDevicesDistribuition(number_of_devices, gateways)
+    
     SF_list = ["SF7", "SF8", "SF9", "SF10", "SF11", "SF12"]
     SFs = []
     
-    
-    for i in range(len(SF_list)):
-        devices = [device for device in devices_list if getDeviceSFName(device)  == SF_list[i] ] 
-        SFs.append(round(len(devices)/multiplication_factor))
-        print("%s - %d; "%(SF_list[i], SFs[i]))    
-    
-    #devices_list, devices_per_circle  = averageDevicesDistribuition(number_of_devices, gateway)
-    
+    SFs = devices.getDeviceInEachSF()
+    print(SF_list)
+    print(SFs)    
     
     plt.figure()
     #print(devices_list)
-    for device in devices_list:
-        if getDeviceSFName(device) == "SF7":
-            plt.scatter(getDeviceX(device), getDeviceY(device), c="blue", linewidths=0.01)
-        elif getDeviceSFName(device) == "SF8": 
-            plt.scatter(getDeviceX(device), getDeviceY(device), c="green", linewidths=0.01)
-        elif getDeviceSFName(device) == "SF9":
-            plt.scatter(getDeviceX(device), getDeviceY(device), c="yellow", linewidths=0.01)
-        elif getDeviceSFName(device) == "SF10":
-            plt.scatter(getDeviceX(device), getDeviceY(device), c="pink", linewidths=0.01)
-        elif getDeviceSFName(device) == "SF11":
-            plt.scatter(getDeviceX(device), getDeviceY(device), c="black", linewidths=0.01)
-        elif getDeviceSFName(device) == "SF12":
-            plt.scatter(getDeviceX(device), getDeviceY(device), c="brown", linewidths=0.01)
+    for i in range(devices.getNumberOfDevices() - 1):
+        if devices.getSFName(i) == "SF7":
+            plt.scatter(devices.getX(i), devices.getY(i), c="blue", linewidths=0.01)
+        elif devices.getSFName(i) == "SF8": 
+            plt.scatter(devices.getX(i), devices.getY(i), c="green", linewidths=0.01)
+        elif devices.getSFName(i) == "SF9":
+            plt.scatter(devices.getX(i), devices.getY(i), c="yellow", linewidths=0.01)
+        elif devices.getSFName(i) == "SF10":
+            plt.scatter(devices.getX(i), devices.getY(i), c="pink", linewidths=0.01)
+        elif devices.getSFName(i) == "SF11":
+            plt.scatter(devices.getX(i), devices.getY(i), c="black", linewidths=0.01)
+        elif devices.getSFName(i) == "SF12":
+            plt.scatter(devices.getX(i), devices.getY(i), c="brown", linewidths=0.01)
 
     for gateway in gateways:
         plt.scatter(gateway[0], gateway[1], c="red")
@@ -297,17 +298,17 @@ def plotC1tShiftedGateway(max_distance = 12000, gateway_possition= (12000,12000)
     plt.ylim(0, 1.1)
 
     plt.legend(loc='upper right')
-    plt.title("Gateway em X: " + str(gateway_possition[0]) + " Y: " + str(gateway_possition[1]) )
-    plt.savefig("output_data/plot_CYCLES_" + str(REPTION_TIMES_CYCLES) + "_PER_INTERACTION_" + str(REPTION_TIMES_PER_INTERACTION_Q1_SIM) + "_Gx_" + str(gateway_possition[0]) + "_Gy_" + str(gateway_possition[1]) + "_TOA_M_" + str(TOA_METHOD) + ".png")
+    #plt.title("Gateway em X: " + str(gateway_possition[0]) + " Y: " + str(gateway_possition[1]) )
+    plt.savefig("output_data/plot_CYCLES_" + str(REPTION_TIMES_CYCLES) + "_PER_INTERACTION_" + str(REPTION_TIMES_PER_INTERACTION_Q1_SIM) + "_Gx_" + str(gateway_possition[0][0]) + "_Gy_" + str(gateway_possition[0][1]) + "_TOA_M_" + str(TOA_METHOD) + ".png")
 
     h1_list = [float(h1) for h1 in h1sm]
     q1_list = [float(q1) for q1 in q1sm]
     c1_list = [float(c1) for c1 in c1t]
-    csvSaveData(gateway_possition, distance, h1_list, q1_list, c1_list)
+    csvSaveData(gateway_possition[0], distance, h1_list, q1_list, c1_list)
 
 if __name__== "__main__":
 
-    Q1MultiplesGateway()
+    plotQ1MultiplesGateway()
     #printTOA()   
     #Q1Graphic ()
     #H1graphics()
@@ -321,7 +322,7 @@ if __name__== "__main__":
 
     """
     max_distance = 14000
-    gateway= (10000,12000)
+    gateway= [(10000,12000)]
     plotC1tShiftedGateway(max_distance, gateway)
     
     max_distance = 16000

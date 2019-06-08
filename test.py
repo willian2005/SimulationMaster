@@ -112,8 +112,9 @@ class TestUM(unittest.TestCase):
     """
 
     def testAverageDevicesDistribuition(self):
-        devices, num_devices_per_cicle = averageDevicesDistribuition(500)
-        self.assertEqual(num_devices_per_cicle, [14, 42, 69, 97, 125, 153])
+        devices = DeviceDistribuition()
+        devices.averageDevicesDistribuition(500)
+        self.assertEqual(devices.getDeviceInEachSF(), [14, 42, 69, 97, 125, 153])
   
     def testQ1Simulated(self):
         outage = Q1Simulated(8000)

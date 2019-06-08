@@ -15,7 +15,7 @@ from devicesDistribuition import *
 
 REPTION_TIMES = 10000
 REPTION_TIMES_PER_INTERACTION_Q1_SIM = 200
-REPTION_TIMES_CYCLES = 500
+REPTION_TIMES_CYCLES = 50
 
 DEVICES_TOTAL = 500
 
@@ -23,8 +23,33 @@ DEVICES_WITH_SAME_BAUDRATE      = 1     #All the SFs will transmit with the baud
 DEVICES_WITH_SAME_TIME_ON_AIR   = 2     #All the devices will transmit respecting the 1% rule (or less), SF7 will have higher baudrate 
 
 TOA_METHOD = DEVICES_WITH_SAME_BAUDRATE
-def getDevicesInTx(number_of_devices, method=DEVICES_WITH_SAME_BAUDRATE, sf=7):
 
+def radiusPerDistance( distance, max_distance):
+        
+    #    Return the minimum radius and maximum radius to the same SF
+    
+    l0 = last_distance_of_sf[-1]
+    l1 = max_distance
+    in_radius = 0
+    for i in range(len(last_distance_of_sf)):
+
+        if distance < last_distance_of_sf[i]:
+
+            if(i == 0):
+                l0 = 1
+            else:
+                l0 = last_distance_of_sf[i - 1]
+
+            l1 = last_distance_of_sf[i]
+            in_radius = i +1            
+            break
+    #print("i %d - distance %d - l0 %d - l1 %d - in_radius %d"% (i, distance,  l0, l1, in_radius)) 
+    return l0, l1, in_radius
+
+def getDevicesInTx(number_of_devices, method=DEVICES_WITH_SAME_BAUDRATE, sf=7):
+    
+    #get the number of devices that is transmitting in the same time
+    
     devices_in_tx = 0
     if(method == DEVICES_WITH_SAME_TIME_ON_AIR):
         time_using_channel = randint(1, 100) #using a channel in 1% of the time
@@ -130,20 +155,92 @@ def Q1OutageProbability(distance, device_with_same_sf, max_distance, n=2.75, sf=
     
     return (rx_success_total/REPTION_TIMES_CYCLES)
 
+def Q1MultiplesGateway(devices_to_be_analized, number_of_interferents, gateways, n=2.75):
 
+    #devices_to_be_analized.plotDevices("devices to be analized")
+
+    devices_outages = [0]*devices_to_be_analized.getNumberOfDevices()
+    
+    for cycle in range(REPTION_TIMES_CYCLES):
+        
+        print(cycle)
+        devices_interferents = DeviceDistribuition()
+        devices_interferents.averageDevicesDistribuition(number_of_interferents, gateways)
+        sqrt_0_5 = math.sqrt(0.5)
+        rx_success_total = 0.0
+
+        for idx in range(devices_to_be_analized.getNumberOfDevices() - 1):
+            
+            rx_success_total = 0
+            sf_main_dev = devices_to_be_analized.getSFNumber(idx)
+            sf_idx_interferents = devices_interferents.getDevicesSameSF(sf_main_dev)
+            #get the number of devices that is transmitting in the same time
+            number_devices_in_tx = getDevicesInTx(len(sf_idx_interferents), sf=sf_main_dev)
+            
+            if(number_devices_in_tx > 0):
+                
+                interfent_in_tx_list = []
+                for i in range(number_devices_in_tx):
+                    
+                    dev_int_same_sf_list = devices_interferents.getDevicesSameSF(sf_main_dev)
+                    idx_int = randint(0, len(dev_int_same_sf_list) - 1)
+                    interfent_in_tx_list.append(dev_int_same_sf_list[idx_int])
+                #simulate if you have success in the communication, considering the transmission signal of the interferents
+                #print("SF - %d, number_devices_in_tx - %d"%(sf_main_dev, number_devices_in_tx))
+                #print(interfent_in_tx_list)
+                #print(devices_to_be_analized.getDeviceDistancesFromGateways(idx))
+                
+                #simulate if you have success in the communication, considering the transmission signal of the interferents
+                rx_success_in_cycle = 0
+                rx_success = 0
+                for i in range(REPTION_TIMES_PER_INTERACTION_Q1_SIM):        
+                    bool_rx_success = 0
+                    for idx_gw, gateway in enumerate(gateways):
+                        done = 0
+                        h_d1 = sqrt_0_5*abs(np.random.randn(1) + np.random.randn(1)*j )
+                        main_device_distance_to_gateway = devices_to_be_analized.getDeviceDistancesFromGateways(idx)[idx_gw]
+                        main_device_path_loss = friisEquation(main_device_distance_to_gateway, n)
+                        main_device_rx_signal = (main_device_path_loss*h_d1**2)
+                        
+                        for idx_interferent in interfent_in_tx_list:
+                            h_d1 = sqrt_0_5*abs(np.random.randn(1) + np.random.randn(1)*j )
+                            interferent_distance_to_gateway = devices_interferents.getDeviceDistancesFromGateways(idx_interferent)[idx_gw]
+                            interferent_path_loss = friisEquation(interferent_distance_to_gateway, n)
+                            interferent_rx_signal = (interferent_path_loss*h_d1**2)
+                            if main_device_rx_signal > (interferent_rx_signal):
+                                bool_rx_success = 1
+                                done = 1
+                                break
+                        if done:
+                            break
+                    rx_success = rx_success + bool_rx_success
+                rx_success_in_cycle = rx_success/REPTION_TIMES_PER_INTERACTION_Q1_SIM
+                rx_success_total = rx_success_total + rx_success_in_cycle
+            else:
+                rx_success_total = rx_success_total + 1
+
+            #define the devices in the interferent list that is transmiting in same time 
+            devices_outages[idx] = devices_outages[idx] + rx_success_total
+        del devices_interferents
+
+    for idx in range(devices_to_be_analized.getNumberOfDevices() - 1):
+        devices_outages[idx] = devices_outages[idx]/REPTION_TIMES_CYCLES
+        print("SF - %d, outage - %f"%(devices_to_be_analized.getSFNumber(idx), devices_outages[idx]))
+    return 
 
 def Q1WithShiftedGateway(distance, number_of_devices, gateway_possition, max_distance):
     """
     gateway_possition = (x,y)
     """
-
-    multiplication_factor = 100
+    devices = DeviceDistribuition()
+    multiplication_factor = 1
     sf_virtual_point, int_sf = getSF(distance)
-    devices_list, devices_per_circle  = averageDevicesDistribuition(number_of_devices*multiplication_factor, gateway_possition)
     
-    devices = [device for device in devices_list if device[3][0]  == sf_virtual_point ]
+    devices.averageDevicesDistribuition(number_of_devices*multiplication_factor, gateway_possition)
+    
+    #devices = [device for device in devices_list if device[3][0]  == sf_virtual_point ]
     #print(devices_list)
-    device_same_sf = round(len(devices)/multiplication_factor)
+    device_same_sf = devices.getDeviceInEachSF()[int_sf - 7]
     print(sf_virtual_point + " distance: " + str(distance) + "devices same sf " + str(device_same_sf))
 
 
@@ -154,13 +251,14 @@ def Q1Simulated(distance, number_of_devices = 500, max_distance = 12000):
     """
         number_of_devices: is the number of devices in the same circus and same SF, 500/6 = 83
     """
+    devices = DeviceDistribuition()
     rx_success_total = 0.0
 
     #set the number of devices in the same SF (radius)
     sf_virtual_point, int_sf = getSF(distance)
-    device_list, devices_per_cicle = averageDevicesDistribuition(number_of_devices)
+    devices.averageDevicesDistribuition(number_of_devices)
     [l0, l1, circul] = radiusPerDistance(distance, max_distance)
-    number_of_devices_same_sf = devices_per_cicle[circul-1]
+    number_of_devices_same_sf = devices.getDeviceInEachSF()[circul-1]
 
     return Q1OutageProbability(distance, number_of_devices_same_sf, max_distance, sf=int_sf)
     
