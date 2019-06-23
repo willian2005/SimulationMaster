@@ -5,7 +5,7 @@ from loraSpecific import *
 import matplotlib.pyplot as plt
 import _pickle as cPickle
 from time import gmtime, strftime
-
+import mplcursors
 
 RADIUS = 12000
 x_central = 12000 
@@ -18,6 +18,8 @@ class DeviceDistribuition():
         self.sf_list = [0]*number_of_devices
         self.distance_from_gateway = [0]*number_of_devices
         self.q1_probability = [0]*number_of_devices
+        self.h1_probability = [0]*number_of_devices
+        self.transmission_power_dbm = [19]*number_of_devices
         self.gateway_list = []
     
     def __del__(self):
@@ -66,6 +68,19 @@ class DeviceDistribuition():
 
             self.sf_list[idx] = sf
 
+    def setH1probability(self, index, h1):
+        self.h1_probability[index] = h1
+
+    def getH1probability(self, index):
+        return self.h1_probability[index]
+
+    def setTransmissionPower(self, index, pot_dbm):
+        self.transmission_power_dbm[index] = pot_dbm
+
+    def getTransmissionPower(self, index):
+        return self.transmission_power_dbm[index]
+
+
     def setQ1probability(self, index, q1):
         self.q1_probability[index] = q1
 
@@ -110,6 +125,9 @@ class DeviceDistribuition():
             SFs.append(sf)
         return SFs
 
+    def getGateways(self):
+        return self.gateway_list
+
     def saveObjectData(self, file_name):
         
         f = open("./output_data/"+"DeviceDistribuition_"+file_name+strftime("%Y-%m-%d_%H:%M", gmtime())+".plt", 'wb')
@@ -124,23 +142,38 @@ class DeviceDistribuition():
 
         self.__dict__.update(tmp_dict) 
  
-    def plotQ1Devices(self, title):
+    def __plotDevices(self, code, title):
 
-        plt.figure()
+        fig = plt.figure()
         #cm = plt.cm.get_cmap('RdYlBu')
         cm = plt.cm.get_cmap('BuGn')
         x = []
         y = []
         value = []
+        labels = []
+        
         for i in range(self.getNumberOfDevices() - 1):
             x.append(self.getX(i))
             y.append(self.getY(i))
-            value.append(self.getQ1probability(i))
+            if code == "Q1_PROB":
+                value.append(self.getQ1probability(i))
+                labels.append(""+str(self.getQ1probability(i))+"\n"+str(self.getSFName(i)))
+            elif code == "H1_PROB":
+                value.append(self.getH1probability(i))
+                labels.append(""+str(self.getH1probability(i))+"\n"+str(self.getSFName(i)))
+            
+        plt.scatter(x, y, c=value, vmin=min(value), vmax=1, cmap=cm)
+        mplcursors.cursor(hover=True).connect(
+            "add", lambda sel: sel.annotation.set_text(labels[sel.target.index]))
 
-        sc = plt.scatter(x, y, c=value, vmin=min(value), vmax=1, cmap=cm)
-    
-        plt.colorbar(sc)
+        plt.colorbar()
         plt.show()
+
+    def plotQ1Devices(self, title):
+        self.__plotDevices("Q1_PROB", title)
+        
+    def plotH1Devices(self, title):
+        self.__plotDevices("H1_PROB", title)
 
     def plotQ1Histogram(self, title, hist_type = 'step'):
 
