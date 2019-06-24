@@ -19,6 +19,7 @@ class DeviceDistribuition():
         self.distance_from_gateway = [0]*number_of_devices
         self.q1_probability = [0]*number_of_devices
         self.gateway_list = []
+        self.add_devices = 0
     
     def __del__(self):
         del self.number_of_devices
@@ -27,9 +28,9 @@ class DeviceDistribuition():
         del self.distance_from_gateway
         del self.gateway_list
         
-    def __deviceDistribuition(self, bottom_radius, higher_radius):
+    def __deviceDistribuition(self, devices_in_circle, bottom_radius, higher_radius):
     
-        for i in range(self.number_of_devices -1):
+        for i in range(devices_in_circle):
             """
             distance_from_center = 2*higher_radius 
             while(distance_from_center < bottom_radius or distance_from_center > higher_radius):
@@ -46,7 +47,8 @@ class DeviceDistribuition():
             x = np.cos(rad)*hypotenuse + x_central
             y = np.sin(rad)*hypotenuse + y_central
             
-            self.coordenate_list[i] = [x, y]
+            self.coordenate_list[self.add_devices] = [x, y]
+            self.add_devices = self.add_devices + 1
 
     def __setGatewayDistance(self):
 
@@ -170,12 +172,18 @@ class DeviceDistribuition():
 
 
         plt.title(title)
-        plt.hist(sf7, histtype=hist_type, color="blue", label="SF7")    
-        plt.hist(sf8, histtype=hist_type, color="green", label="SF8") 
-        plt.hist(sf9, histtype=hist_type, color="yellow", label="SF9") 
-        plt.hist(sf10, histtype=hist_type, color="pink",  label="SF10") 
-        plt.hist(sf11, histtype=hist_type, color="black", label="SF11") 
-        plt.hist(sf12, histtype=hist_type, color="brown", label="SF12") 
+        if(len(sf7) > 0):
+            plt.hist(sf7, histtype=hist_type, color="blue", label="SF7")    
+        if(len(sf8) > 0):
+            plt.hist(sf8, histtype=hist_type, color="green", label="SF8") 
+        if(len(sf9) > 0):
+            plt.hist(sf9, histtype=hist_type, color="yellow", label="SF9") 
+        if(len(sf10) > 0):
+            plt.hist(sf10, histtype=hist_type, color="pink",  label="SF10") 
+        if(len(sf11) > 0):
+            plt.hist(sf11, histtype=hist_type, color="black", label="SF11") 
+        if(len(sf12) > 0):
+            plt.hist(sf12, histtype=hist_type, color="brown", label="SF12") 
 
         plt.legend(loc='upper right')
         plt.show()
@@ -219,7 +227,7 @@ class DeviceDistribuition():
     def averageDevicesDistribuition(self, gateway_possition = [(x_central, y_central)]):
 
         total_area = math.pi*(RADIUS**2)
-        step = 12000
+        step = 400
         self.gateway_list = gateway_possition
         devices_per_circle = []
         for i in range(0, RADIUS, step):
@@ -228,7 +236,7 @@ class DeviceDistribuition():
             circular_area = external_circle - internal_circle
             number_of_devices_per_circle = round((circular_area/total_area)*self.number_of_devices)
             devices_per_circle.append(number_of_devices_per_circle)
-            self.__deviceDistribuition(i+1, i+step)
+            self.__deviceDistribuition(number_of_devices_per_circle, i+1, i+step)
 
         self.__setGatewayDistance()
         self.__setSf()
