@@ -17,8 +17,8 @@ from multiprocessing import Process, Queue
 
 
 REPTION_TIMES = 10000
-REPTION_TIMES_PER_INTERACTION_Q1_SIM = 800
-REPTION_TIMES_CYCLES = 500
+REPTION_TIMES_PER_INTERACTION_Q1_SIM = 1000
+REPTION_TIMES_CYCLES = 1000
 
 
 DEVICES_WITH_SAME_BAUDRATE      = 1     #All the SFs will transmit with the baudrate of the SF12

@@ -160,14 +160,34 @@ def Q1ShiftedGateway(max_distance = 12000, gateway= [(12000,12000)], number_of_d
 def plotStorageQ1MultiplesGateways():
 
     device = DeviceDistribuition(0)
-    device.loadObjectData("output_data/DeviceDistribuition_teste2016-02-12_13:57.plt")
-    device.plotQ1Devices("Plot teste")
-    #device.plotQ1Histogram("Histograma da DER por SFs")
+    device.loadObjectData("output_data/DeviceDistribuition_poor_simulation2019-06-18_22:57.plt")
+    print(device.getDeviceInEachSF())
+    device.plotDevices("Distribuicao por SF")
+    device.plotQ1Devices("DER Q1")
+    device.plotQ1Histogram("Histograma da DER por SFs")
 
-def plotQ1MultiplesGateway(gateways = [(6000,12000), (18000, 12000)], number_of_devices = 4000):
+    device.loadObjectData("output_data/DeviceDistribuition_poor_simulation2019-06-18_16:26.plt")
+    print(device.getDeviceInEachSF())
+    device.plotDevices("Distribuicao por SF")
+    device.plotQ1Devices("DER Q1")
+    device.plotQ1Histogram("Histograma da DER por SFs")
+
+    device.loadObjectData("output_data/DeviceDistribuition_poor_simulation2019-06-18_18:18.plt")
+    print(device.getDeviceInEachSF())
+    device.plotDevices("Distribuicao por SF")
+    device.plotQ1Devices("DER Q1")
+    device.plotQ1Histogram("Histograma da DER por SFs")
+"""
+    device.loadObjectData("output_data/DeviceDistribuition_poor_simulation2019-06-16_20:12.plt")
+    print(device.getDeviceInEachSF())
+    device.plotDevices("Distribuicao por SF")
+    device.plotQ1Devices("DER Q1")
+    device.plotQ1Histogram("Histograma da DER por SFs")
+"""
+def plotQ1MultiplesGateway(gateways = [(6000,12000), (18000, 12000)], number_of_devices = 1000):
 
     
-    devices_to_be_analized = DeviceDistribuition(500)
+    devices_to_be_analized = DeviceDistribuition(1000)
 
     devices_to_be_analized.averageDevicesDistribuition(gateways)
     devices_to_be_analized.plotDevices("teste")
@@ -323,12 +343,20 @@ def plotC1tShiftedGateway(max_distance = 12000, gateway_possition= (12000,12000)
 
 if __name__== "__main__":
 
-    #plotQ1MultiplesGateway()
+    
     plotStorageQ1MultiplesGateways()
     #printTOA()   
     #Q1Graphic ()
     #H1graphics()
 
+    
+    #plotQ1MultiplesGateway(gateways = [(12000,12000)])
+    #plotQ1MultiplesGateway(gateways = [(6000,12000), (18000, 12000)])
+    #plotQ1MultiplesGateway(gateways = [(6000,6000), (18000, 6000), (12000,18000)])
+    #plotQ1MultiplesGateway(gateways = [(6000,6000), (18000, 6000), (6000, 18000), (18000, 18000)])
+    
+    
+    
     #plotDefaultDeviceDistribuition([(6000,12000), (18000, 12000)], 4000)
     #plotDefaultDeviceDistribuition([(6000,6000), (18000, 6000), (6000, 18000), (18000, 18000)], 4000)
     
