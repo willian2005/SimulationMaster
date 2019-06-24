@@ -156,8 +156,29 @@ def Q1OutageProbability(distance, device_with_same_sf, max_distance, n=2.75, sf=
     
     return (rx_success_total/REPTION_TIMES_CYCLES)
 
+def H1IndividualDevices(devices_to_be_analized, n=2.75, bw = 125e3):
 
-def Q1MultiplesGateway(devices_to_be_analized, number_of_interferents, gateways, n=2.75):
+    
+    for idx in range(devices_to_be_analized.getNumberOfDevices() - 1):
+
+        print("PT TX %d", devices_to_be_analized.getTransmissionPower(idx))
+        pl_tx = (10**(devices_to_be_analized.getTransmissionPower(idx)/10))/1e3
+        sensibility = (10**(loraSensitivity(devices_to_be_analized.getSFNumber(idx), bw)/10))/1e3
+        sum = 0
+
+        for i in range(REPTION_TIMES):
+            h_d1 = math.sqrt(0.5)*abs(np.random.randn(1) + np.random.randn(1)*j )
+            
+            for idx_gw, gateway in enumerate(devices_to_be_analized.getGateways()):
+                if (float(pl_tx*friisEquation(int(devices_to_be_analized.getDeviceDistancesFromGateways(idx)[idx_gw]), n)*h_d1**2)) >= sensibility:
+                    sum = sum + 1
+                    break
+
+        print("sum %d", sum/REPTION_TIMES)
+        devices_to_be_analized.setH1probability(idx, sum/REPTION_TIMES)
+    return 
+
+def Q1IndividualDevices(devices_to_be_analized, number_of_interferents, gateways, n=2.75):
 
     #devices_to_be_analized.plotDevices("devices to be analized")
 
@@ -226,28 +247,6 @@ def Q1MultiplesGateway(devices_to_be_analized, number_of_interferents, gateways,
             #define the devices in the interferent list that is transmiting in same time 
             devices_outages[idx] = devices_outages[idx] + rx_success_total
         del devices_interferents
-        #q.put(devices_outages_one_cycle)
-
-
-    """
-    index = 0
-    q = Queue()
-    for cycle in range(REPTION_TIMES_CYCLES):    
-        print("cycle: %d"% cycle)
-        p = Process(target=processParallel, args=(devices_to_be_analized, q, cycle))
-        p.start()
-        index = index +1
-        print("Lauching the thread: %d"% index)
-        if index == 4:
-            p.join()
-            index = 0
-
-    p.join()
-    for cycle in range(REPTION_TIMES_CYCLES):    
-        a = q.get()
-        for idx in range(devices_to_be_analized.getNumberOfDevices() - 1):
-            devices_outages[idx] = devices_outages[idx] + a[idx]
-    """
         
     for idx in range(devices_to_be_analized.getNumberOfDevices() - 1):
         devices_outages[idx] = devices_outages[idx]/REPTION_TIMES_CYCLES

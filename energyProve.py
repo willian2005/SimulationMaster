@@ -157,6 +157,7 @@ def Q1ShiftedGateway(max_distance = 12000, gateway= [(12000,12000)], number_of_d
         q1sm[a[0]] = a[1]
     
     return q1sm, distances
+
 def plotStorageQ1MultiplesGateways():
 
     device = DeviceDistribuition(0)
@@ -184,8 +185,8 @@ def plotStorageQ1MultiplesGateways():
     device.plotQ1Devices("DER Q1")
     device.plotQ1Histogram("Histograma da DER por SFs")
 """
-def plotQ1MultiplesGateway(gateways = [(6000,12000), (18000, 12000)], number_of_devices = 1000):
 
+def plotQ1MultiplesGateway(gateways = [(6000,12000), (18000, 12000)], number_of_devices = 4000):
     
     devices_to_be_analized = DeviceDistribuition(1000)
 
@@ -196,7 +197,7 @@ def plotQ1MultiplesGateway(gateways = [(6000,12000), (18000, 12000)], number_of_
 
     number_of_interferents = number_of_devices
 
-    Q1MultiplesGateway(devices_to_be_analized, number_of_interferents, gateways)
+    Q1IndividualDevices(devices_to_be_analized, number_of_interferents, gateways)
 
     devices_to_be_analized.saveObjectData("poor_simulation")
 
@@ -205,9 +206,32 @@ def plotQ1MultiplesGateway(gateways = [(6000,12000), (18000, 12000)], number_of_
     #    print(getDeviceDistancesFromGateways(device))
     #    print("x:%d - y:%d"%(getDeviceX(device), getDeviceY(device)))
     #print(devices_per_circle)
-    
+
+    return
+
+def plotH1MultiplesGateway(gateways = [(6000,12000), (18000, 12000)], number_of_devices = 4000):
 
     
+    devices_to_be_analized = DeviceDistribuition(500)
+
+    devices_to_be_analized.averageDevicesDistribuition(gateways)
+    devices_to_be_analized.plotDevices("teste")
+    print(devices_to_be_analized.getDeviceInEachSF())
+    
+
+    number_of_interferents = number_of_devices
+
+    H1IndividualDevices(devices_to_be_analized)
+
+    devices_to_be_analized.saveObjectData("H1_simulation")
+
+    devices_to_be_analized.plotH1Devices("H1 test")
+    #debug
+    #for device in devices_list:
+    #    print(getDeviceDistancesFromGateways(device))
+    #    print("x:%d - y:%d"%(getDeviceX(device), getDeviceY(device)))
+    #print(devices_per_circle)
+
     return
 
 def plotDefaultDeviceDistribuition(gateways = [(6000,12000), (18000, 12000)], number_of_devices = 4000):
@@ -343,8 +367,9 @@ def plotC1tShiftedGateway(max_distance = 12000, gateway_possition= (12000,12000)
 
 if __name__== "__main__":
 
-    
-    plotStorageQ1MultiplesGateways()
+    #plotQ1MultiplesGateway()
+    plotH1MultiplesGateway()
+    #plotStorageQ1MultiplesGateways()
     #printTOA()   
     #Q1Graphic ()
     #H1graphics()
