@@ -12,16 +12,18 @@ x_central = 12000
 y_central = 12000 
 class DeviceDistribuition():
 
-    def __init__(self, number_of_devices):
+    def __init__(self, number_of_devices, gateway_possition ):
         self.number_of_devices = number_of_devices
         self.coordenate_list = [0]*number_of_devices
         self.sf_list = [0]*number_of_devices
         self.distance_from_gateway = [0]*number_of_devices
         self.q1_probability = [0]*number_of_devices
         self.h1_probability = [0]*number_of_devices
+        self.c1_probability = [0]*number_of_devices
         self.transmission_power_dbm = [19]*number_of_devices
-        self.gateway_list = []
+        self.gateway_list = gateway_possition
         self.add_devices = 0
+        
     
     def __del__(self):
         del self.number_of_devices
@@ -49,11 +51,14 @@ class DeviceDistribuition():
             x = np.cos(rad)*hypotenuse + x_central
             y = np.sin(rad)*hypotenuse + y_central
             
+            
             self.coordenate_list[self.add_devices] = [x, y]
+            
             self.add_devices = self.add_devices + 1
 
     def __setGatewayDistance(self):
 
+        print(self.gateway_list)
         for idx in range(self.number_of_devices -1):
             distances = []
             for gateway_possition in self.gateway_list:
@@ -69,6 +74,14 @@ class DeviceDistribuition():
             sf = getSF(min(self.getDeviceDistancesFromGateways(idx)))    
 
             self.sf_list[idx] = sf
+
+    def updateC1Probability(self):
+        
+        for idx in range(self.number_of_devices -1):
+            self.c1_probability[idx] = self.q1_probability[idx]*self.h1_probability[idx]
+
+    def getC1Probability(self, index):
+        return self.c1_probability[index]
 
     def setH1probability(self, index, h1):
         self.h1_probability[index] = h1
@@ -157,13 +170,17 @@ class DeviceDistribuition():
         for i in range(self.getNumberOfDevices() - 1):
             x.append(self.getX(i))
             y.append(self.getY(i))
+            
             if code == "Q1_PROB":
                 value.append(self.getQ1probability(i))
                 labels.append(""+str(self.getQ1probability(i))+"\n"+str(self.getSFName(i)))
             elif code == "H1_PROB":
                 value.append(self.getH1probability(i))
                 labels.append(""+str(self.getH1probability(i))+"\n"+str(self.getSFName(i)))
-            
+            elif code == "C1_PROB":
+                value.append(self.getC1probability(i))
+                labels.append(""+str(self.getC1probability(i))+"\n"+str(self.getSFName(i)))
+
         plt.scatter(x, y, c=value, vmin=min(value), vmax=1, cmap=cm)
         mplcursors.cursor(hover=True).connect(
             "add", lambda sel: sel.annotation.set_text(labels[sel.target.index]))
@@ -176,6 +193,9 @@ class DeviceDistribuition():
         
     def plotH1Devices(self, title):
         self.__plotDevices("H1_PROB", title)
+
+    def plotC1Devices(self, title):
+        self.__plotDevices("C1_PROB", title)
 
     def plotQ1Histogram(self, title, hist_type = 'step'):
 
@@ -203,8 +223,6 @@ class DeviceDistribuition():
             elif self.getSFNumber(i) == 12:
                 sf12.append(self.getQ1probability(i))
 
-
-        plt.title(title)
         if(len(sf7) > 0):
             plt.hist(sf7, histtype=hist_type, color="blue", label="SF7")    
         if(len(sf8) > 0):
@@ -217,7 +235,8 @@ class DeviceDistribuition():
             plt.hist(sf11, histtype=hist_type, color="black", label="SF11") 
         if(len(sf12) > 0):
             plt.hist(sf12, histtype=hist_type, color="brown", label="SF12") 
-
+        
+        plt.title(title)
         plt.legend(loc='upper right')
         plt.show()
 
@@ -257,17 +276,18 @@ class DeviceDistribuition():
         plt.title(title)
         plt.show()
 
-    def averageDevicesDistribuition(self, gateway_possition = [(x_central, y_central)]):
+    def averageDevicesDistribuition(self):
 
         total_area = math.pi*(RADIUS**2)
         step = 400
-        self.gateway_list = gateway_possition
         devices_per_circle = []
         for i in range(0, RADIUS, step):
             internal_circle = math.pi*(i**2)
             external_circle = math.pi*((i+step)**2)
             circular_area = external_circle - internal_circle
-            number_of_devices_per_circle = round((circular_area/total_area)*self.number_of_devices)
+            number_of_devices_per_circle = math.ceil((circular_area/total_area)*(self.number_of_devices - 1))
+            if(number_of_devices_per_circle + self.add_devices >= self.number_of_devices):
+                number_of_devices_per_circle = (self.number_of_devices - self.add_devices) - 1
             devices_per_circle.append(number_of_devices_per_circle)
             self.__deviceDistribuition(number_of_devices_per_circle, i+1, i+step)
 

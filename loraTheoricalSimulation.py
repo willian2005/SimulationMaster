@@ -178,7 +178,7 @@ def H1IndividualDevices(devices_to_be_analized, n=2.75, bw = 125e3):
         devices_to_be_analized.setH1probability(idx, sum/REPTION_TIMES)
     return 
 
-def Q1IndividualDevices(devices_to_be_analized, number_of_interferents, gateways, n=2.75):
+def Q1IndividualDevices(devices_to_be_analized, n=2.75):
 
     #devices_to_be_analized.plotDevices("devices to be analized")
 
@@ -189,8 +189,8 @@ def Q1IndividualDevices(devices_to_be_analized, number_of_interferents, gateways
         
         print(cycle)
 
-        devices_interferents = DeviceDistribuition(number_of_interferents)
-        devices_interferents.averageDevicesDistribuition(gateways)
+        devices_interferents = devices_to_be_analized
+        #devices_interferents.averageDevicesDistribuition(gateways)
         sqrt_0_5 = math.sqrt(0.5)
         rx_success_total = 0.0
 
@@ -220,7 +220,7 @@ def Q1IndividualDevices(devices_to_be_analized, number_of_interferents, gateways
                 rx_success = 0
                 for i in range(REPTION_TIMES_PER_INTERACTION_Q1_SIM):        
                     bool_rx_success = 0
-                    for idx_gw, gateway in enumerate(gateways):
+                    for idx_gw, gateway in enumerate(devices_interferents.getGateways()):
                         done = 0
                         h_d1 = sqrt_0_5*abs(np.random.randn(1) + np.random.randn(1)*j )
                         main_device_distance_to_gateway = devices_to_be_analized.getDeviceDistancesFromGateways(idx)[idx_gw]
