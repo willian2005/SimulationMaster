@@ -11,6 +11,7 @@ from energyUtils import *
 from loraTheoricalSimulation import *
 from devicesDistribuition import *
 from lorawan_toa.lorawan_toa import get_toa
+import optparse
 
 calc_semtech_power_mw = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
 calc_semtech_power_dbm = [22, 23, 24, 24, 24, 25, 25, 25, 25, 26, 31, 32, 34, 35, 44, 82, 85, 90, 105, 115, 125]
@@ -387,6 +388,59 @@ def plotC1tShiftedGateway(max_distance = 12000, gateway_possition= (12000,12000)
     csvSaveData(gateway_possition[0], distance, h1_list, q1_list, c1_list)
 
 if __name__== "__main__":
+
+
+    parser = optparse.OptionParser()
+
+    parser.add_option('--simulate',
+        action="store_true", dest="simulate",
+        help="Simulate the network with the parameters, can't be used with --plot", 
+        default=False)
+
+    parser.add_option('--plot',
+        action="store", dest="plot",
+        help="Plot the data in a object device ditribuition,  should used with parameter, --plot_object_device_distribuition", 
+        default=False)
+
+
+    parser.add_option('--sf_method',
+        action="store", dest="sf_method",
+        help="Method used to set the SFs, could be: \"radial\", \"same_time_on_air\"", 
+        default=False)
+
+    parser.add_option('--number_of_devices',
+        action="store", dest="number_of_devices",
+        help="Number of devices in the network", 
+        default=False)
+
+    parser.add_option('--number_of_gateways',
+        action="store", dest="number_of_gateways",
+        help="The total radius of the network", 
+        default=False)
+
+    parser.add_option('--max_radius_size',
+        action="store", dest="max_radius_size",
+        help="The total radius of the network", 
+        default=False)
+    
+    parser.add_option('--save_object_device_distribuition',
+        action="store", dest="save_object_device_distribuition",
+        help="Save the object of the class device distribuition on file \"arg\"", 
+        default=False)
+
+    parser.add_option('--plot_object_device_distribuition',
+        action="store", dest="plot_object_device_distribuition",
+        help="Plot the object of the class device distribuition on file \"arg\"", 
+        default=False)
+
+    
+    options, args = parser.parse_args()
+
+    if(options.simulate != False):
+        print("Init the simulation with the parameters")
+    elif(options.plot != False):
+        print("Plot the data in the file: %s", options.plot_object_device_distribuition)
+
 
     #plotQ1MultiplesGateway()
     #plotH1MultiplesGateway()
