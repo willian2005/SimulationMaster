@@ -7,12 +7,12 @@ import _pickle as cPickle
 from time import gmtime, strftime
 import mplcursors
 
-RADIUS = 12000
-x_central = 12000 
-y_central = 12000 
+#RADIUS = 12000
+#x_central = 12000 
+#y_central = 12000 
 class DeviceDistribuition():
 
-    def __init__(self, number_of_devices, gateway_possition ):
+    def __init__(self, number_of_devices, gateway_possition, radius ):
         self.number_of_devices = number_of_devices
         self.coordenate_list = [0]*number_of_devices
         self.sf_list = [0]*number_of_devices
@@ -22,6 +22,7 @@ class DeviceDistribuition():
         self.c1_probability = [0]*number_of_devices
         self.transmission_power_dbm = [19]*number_of_devices
         self.gateway_list = gateway_possition
+        self.radius = radius
         self.add_devices = 0
         
     
@@ -48,12 +49,12 @@ class DeviceDistribuition():
             hypotenuse = randint(bottom_radius, higher_radius)
             degree = randint(0, 360)
             rad = np.radians(degree)
+            x_central = self.radius/2
+            y_central = self.radius/2
             x = np.cos(rad)*hypotenuse + x_central
-            y = np.sin(rad)*hypotenuse + y_central
-            
+            y = np.sin(rad)*hypotenuse + y_central            
             
             self.coordenate_list[self.add_devices] = [x, y]
-            
             self.add_devices = self.add_devices + 1
 
     def __setGatewayDistance(self):
@@ -71,7 +72,7 @@ class DeviceDistribuition():
     def __setSf(self):
 
         for idx in range(self.number_of_devices -1):
-            sf = getSF(min(self.getDeviceDistancesFromGateways(idx)))    
+            sf = getSF(min(self.getDeviceDistancesFromGateways(idx)), self.radius)    
 
             self.sf_list[idx] = sf
 
@@ -261,8 +262,8 @@ class DeviceDistribuition():
         for gateway in self.gateway_list:
             plt.scatter(gateway[0], gateway[1], c="red")
 
-        plt.ylim(0, 24000)
-        plt.xlim(0, 24000)
+        plt.ylim(0, self.radius)
+        plt.xlim(0, self.radius)
         #need because of the legend
         plt.scatter(-100, -1, c="red", linewidths=0.01, label='Gateway')
         plt.scatter(-100, -1, c="blue", linewidths=0.01, label='SF7')
@@ -278,10 +279,11 @@ class DeviceDistribuition():
 
     def averageDevicesDistribuition(self):
 
-        total_area = math.pi*(RADIUS**2)
-        step = 400
+        number_of_steps = 30
+        total_area = math.pi*((self.radius/2)**2)
+        step = int((self.radius/2)/number_of_steps)
         devices_per_circle = []
-        for i in range(0, RADIUS, step):
+        for i in range(0, int(self.radius/2), step):
             internal_circle = math.pi*(i**2)
             external_circle = math.pi*((i+step)**2)
             circular_area = external_circle - internal_circle
@@ -290,6 +292,7 @@ class DeviceDistribuition():
                 number_of_devices_per_circle = (self.number_of_devices - self.add_devices) - 1
             devices_per_circle.append(number_of_devices_per_circle)
             self.__deviceDistribuition(number_of_devices_per_circle, i+1, i+step)
+            print("internal circle: %d, external: %d", i+1, step+1)
 
         self.__setGatewayDistance()
         self.__setSf()

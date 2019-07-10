@@ -262,6 +262,7 @@ def Q1WithShiftedGateway(distance, number_of_devices, gateway_possition, max_dis
     devices = DeviceDistribuition(number_of_devices*multiplication_factor)
 
     sf_virtual_point, int_sf = getSF(distance)
+
     
     devices.averageDevicesDistribuition(gateway_possition)
     

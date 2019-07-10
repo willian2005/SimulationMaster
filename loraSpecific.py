@@ -10,11 +10,15 @@ last_distance_of_sf = [2000, 4000, 6000, 8000, 10000, 12000]
 #last_distance_of_sf = [2200, 3000, 4000, 5000, 6000, 7800]
 sfs = ["SF7", "SF8", "SF9", "SF10", "SF11", "SF12"]
 
-def getSF(distance):
+def getSF(distance, max_radius):
 
     sf = "SF0"
     int_sf = 0
-    
+
+    sf = sfs[int(distance/(max_radius/6))]
+    int_sf = int(distance/(max_radius/6)) + 7
+    print("SF - %s int sf - %d - distance - %d"%(sf, int_sf, distance))
+    """
     for i in range(len(last_distance_of_sf)):
         if distance < last_distance_of_sf[i]:
             sf = sfs[i]
@@ -23,7 +27,7 @@ def getSF(distance):
     if distance > last_distance_of_sf[-1]:
         sf =  "SF12"
         int_sf = 12  
-
+    """
     return [sf, int_sf]
     
 def loraSensitivity(sf, bw):

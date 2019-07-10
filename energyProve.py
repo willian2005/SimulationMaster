@@ -1,3 +1,4 @@
+#! /usr/bin/python3
 import sys
 sys.path.append("..")
 sys.path.append("output_data/")
@@ -193,9 +194,9 @@ def plotStorageQ1MultiplesGateways():
     device.plotQ1Devices("DER Q1")
     device.plotQ1Histogram("Histograma da DER por SFs")
 """
-def plotC1MultiplesGateway(gateways = [(6000,12000), (18000, 12000)], number_of_devices = 4000):
+def plotC1MultiplesGateway(gateways, number_of_devices, radius):
 
-    devices_to_be_analized = DeviceDistribuition(number_of_devices, gateways)
+    devices_to_be_analized = DeviceDistribuition(number_of_devices, gateways, radius)
 
     devices_to_be_analized.averageDevicesDistribuition()
     devices_to_be_analized.plotDevices("teste")
@@ -387,10 +388,27 @@ def plotC1tShiftedGateway(max_distance = 12000, gateway_possition= (12000,12000)
     c1_list = [float(c1) for c1 in c1t]
     csvSaveData(gateway_possition[0], distance, h1_list, q1_list, c1_list)
 
+def checkGatewasInsideRadius(gateways, radius_size):
+
+    ret = True
+    x_central_point = radius_size/2
+    y_central_point = radius_size/2
+    
+    for gw in gateways:
+        x_distance = abs(gw[0] - x_central_point)
+        y_distance = abs(gw[1] - y_central_point)
+        distance = math.sqrt(x_distance**2 + y_distance**2)
+        #print("Distance to gateway: %f", distance)
+        if(distance > radius_size/2):
+            ret = False
+    
+    return ret
+
+
 if __name__== "__main__":
 
 
-    parser = optparse.OptionParser()
+    parser = optparse.OptionParser( usage="Ex: ./energyProve.py --simulate --gateway=\"[|1500,2250|, |1500, 750|]\" --number_of_devices=500 --radius_size=3000")
 
     parser.add_option('--simulate',
         action="store_true", dest="simulate",
@@ -413,13 +431,8 @@ if __name__== "__main__":
         help="Number of devices in the network", 
         default=False)
 
-    parser.add_option('--number_of_gateways',
-        action="store", dest="number_of_gateways",
-        help="The total radius of the network", 
-        default=False)
-
-    parser.add_option('--max_radius_size',
-        action="store", dest="max_radius_size",
+    parser.add_option('--radius_size',
+        action="store", dest="radius_size",
         help="The total radius of the network", 
         default=False)
     
@@ -433,15 +446,59 @@ if __name__== "__main__":
         help="Plot the object of the class device distribuition on file \"arg\"", 
         default=False)
 
+    parser.add_option('--gateways',
+        action="store", dest="gateways",
+        help="list of gateways, ex:  \"[|X1,Y1|, |X2, Y2|]\", should be used with parameter --simulate",
+        default=False)
+
     
     options, args = parser.parse_args()
 
     if(options.simulate != False):
         print("Init the simulation with the parameters")
+
+        if(options.gateways != False):
+            string_gateways = options.gateways
+            gateways = []
+        else:
+            print("To run the simulation you need to specify the gateways")
+            exit(-1)
+        
+        if(options.number_of_devices != False):
+            number_of_devices = int(options.number_of_devices)
+        else:
+            print("To run the simulation you need to specify the number of devices")
+            exit(-1)
+        
+        if(options.radius_size != False):
+            radius_size = int(options.radius_size)
+        else: 
+            print("To run the simulation you need to specify the radius size")
+            exit(-1)
+        
+
     elif(options.plot != False):
         print("Plot the data in the file: %s", options.plot_object_device_distribuition)
 
 
+    try:
+        for part_str in string_gateways.split("|"):
+            if(len(part_str) > 2):
+                x = int(part_str.split(",")[0])
+                y = int(part_str.split(",")[1])
+                gateways.append((x, y))
+                
+    except ValueError:
+        print("The sintax of variable --gateway is wrong, use ex: ./energyProve.py --simulate --gateway=\"[|6000,12000|, |18000, 12000|]\"")
+    
+    print("List of gateways")
+    print(gateways)
+
+    if options.simulate and checkGatewasInsideRadius(gateways, radius_size) == False :
+        print("The gateways is out of circle")
+        exit(-1)
+
+    plotC1MultiplesGateway(gateways, number_of_devices, radius_size)
     #plotQ1MultiplesGateway()
     #plotH1MultiplesGateway()
     #plotStorageQ1MultiplesGateways()
@@ -449,9 +506,8 @@ if __name__== "__main__":
     #Q1Graphic ()
     #H1graphics()
 
-    
     #plotQ1MultiplesGateway(gateways = [(12000,12000)])
-    plotC1MultiplesGateway(gateways = [(6000,12000), (18000, 12000)])
+
     #plotQ1MultiplesGateway(gateways = [(6000,6000), (18000, 6000), (12000,18000)])
     #plotQ1MultiplesGateway(gateways = [(6000,6000), (18000, 6000), (6000, 18000), (18000, 18000)])
     
