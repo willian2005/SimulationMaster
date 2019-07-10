@@ -391,15 +391,15 @@ def plotC1tShiftedGateway(max_distance = 12000, gateway_possition= (12000,12000)
 def checkGatewasInsideRadius(gateways, radius_size):
 
     ret = True
-    x_central_point = radius_size/2
-    y_central_point = radius_size/2
+    x_central_point = radius_size
+    y_central_point = radius_size
     
     for gw in gateways:
         x_distance = abs(gw[0] - x_central_point)
         y_distance = abs(gw[1] - y_central_point)
         distance = math.sqrt(x_distance**2 + y_distance**2)
         #print("Distance to gateway: %f", distance)
-        if(distance > radius_size/2):
+        if(distance > radius_size):
             ret = False
     
     return ret

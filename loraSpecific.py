@@ -15,19 +15,11 @@ def getSF(distance, max_radius):
     sf = "SF0"
     int_sf = 0
 
-    sf = sfs[int(distance/(max_radius/6))]
-    int_sf = int(distance/(max_radius/6)) + 7
-    print("SF - %s int sf - %d - distance - %d"%(sf, int_sf, distance))
-    """
-    for i in range(len(last_distance_of_sf)):
-        if distance < last_distance_of_sf[i]:
-            sf = sfs[i]
-            int_sf = 7+i
-            break
-    if distance > last_distance_of_sf[-1]:
-        sf =  "SF12"
-        int_sf = 12  
-    """
+    sf_base = int(distance/(max_radius/6))
+    sf = sfs[sf_base if sf_base<6 else 5]
+    int_sf = sf_base + 7
+    
+    
     return [sf, int_sf]
     
 def loraSensitivity(sf, bw):

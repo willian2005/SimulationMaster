@@ -49,8 +49,8 @@ class DeviceDistribuition():
             hypotenuse = randint(bottom_radius, higher_radius)
             degree = randint(0, 360)
             rad = np.radians(degree)
-            x_central = self.radius/2
-            y_central = self.radius/2
+            x_central = self.radius
+            y_central = self.radius
             x = np.cos(rad)*hypotenuse + x_central
             y = np.sin(rad)*hypotenuse + y_central            
             
@@ -262,8 +262,8 @@ class DeviceDistribuition():
         for gateway in self.gateway_list:
             plt.scatter(gateway[0], gateway[1], c="red")
 
-        plt.ylim(0, self.radius)
-        plt.xlim(0, self.radius)
+        plt.ylim(0, self.radius*2)
+        plt.xlim(0, self.radius*2)
         #need because of the legend
         plt.scatter(-100, -1, c="red", linewidths=0.01, label='Gateway')
         plt.scatter(-100, -1, c="blue", linewidths=0.01, label='SF7')
@@ -280,10 +280,10 @@ class DeviceDistribuition():
     def averageDevicesDistribuition(self):
 
         number_of_steps = 30
-        total_area = math.pi*((self.radius/2)**2)
-        step = int((self.radius/2)/number_of_steps)
+        total_area = math.pi*((self.radius)**2)
+        step = int((self.radius)/number_of_steps)
         devices_per_circle = []
-        for i in range(0, int(self.radius/2), step):
+        for i in range(0, int(self.radius), step):
             internal_circle = math.pi*(i**2)
             external_circle = math.pi*((i+step)**2)
             circular_area = external_circle - internal_circle
@@ -292,7 +292,7 @@ class DeviceDistribuition():
                 number_of_devices_per_circle = (self.number_of_devices - self.add_devices) - 1
             devices_per_circle.append(number_of_devices_per_circle)
             self.__deviceDistribuition(number_of_devices_per_circle, i+1, i+step)
-            print("internal circle: %d, external: %d", i+1, step+1)
+            print("internal circle: %d, external: %d"%(i+1, step))
 
         self.__setGatewayDistance()
         self.__setSf()
