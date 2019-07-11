@@ -12,7 +12,8 @@ import mplcursors
 #y_central = 12000 
 class DeviceDistribuition():
 
-    def __init__(self, number_of_devices, gateway_possition, radius ):
+    def __init__(self, number_of_devices, gateway_possition, radius, sf_method ):
+        self.sf_method = sf_method
         self.number_of_devices = number_of_devices
         self.coordenate_list = [0]*number_of_devices
         self.sf_list = [0]*number_of_devices
@@ -72,7 +73,7 @@ class DeviceDistribuition():
     def __setSf(self):
 
         for idx in range(self.number_of_devices -1):
-            sf = getSF(min(self.getDeviceDistancesFromGateways(idx)), self.radius)    
+            sf = getSF(min(self.getDeviceDistancesFromGateways(idx)), self.radius, self.sf_method, self.number_of_devices)    
 
             self.sf_list[idx] = sf
 

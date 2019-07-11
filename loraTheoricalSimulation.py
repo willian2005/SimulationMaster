@@ -60,13 +60,12 @@ def getDevicesInTx(number_of_devices, method=DEVICES_WITH_SAME_BAUDRATE, sf=7):
     
     elif(method == DEVICES_WITH_SAME_BAUDRATE):
     
-        time_on_air_in_reference_sf12_list = [24.033195, 13.104072, 7.203980, 3.601990, 1.800995, 1.000000]
-        time_on_air_in_reference_sf12 = round(time_on_air_in_reference_sf12_list[sf-7]*100)
-        time_using_channel = randint(1, time_on_air_in_reference_sf12)#using a channel in 1% of the time
-        #print("time_on_air_in_reference_sf12: %d, time_using_channel: %d"%(time_on_air_in_reference_sf12, time_using_channel))
+        time_on_air_in_reference_sf7 = round(time_on_air_in_reference_sf7_list[sf-7]*100)
+        time_using_channel = randint(1, time_on_air_in_reference_sf7)#using a channel in 1% of the time
+        #print("time_on_air_in_reference_sf7: %d, time_using_channel: %d"%(time_on_air_in_reference_sf7, time_using_channel))
         for i in range(number_of_devices):
 
-            if randint(1, time_on_air_in_reference_sf12) == time_using_channel:
+            if randint(1, time_on_air_in_reference_sf7) == time_using_channel:
                 devices_in_tx = devices_in_tx + 1
     
     return devices_in_tx

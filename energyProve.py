@@ -194,22 +194,19 @@ def plotStorageQ1MultiplesGateways():
     device.plotQ1Devices("DER Q1")
     device.plotQ1Histogram("Histograma da DER por SFs")
 """
-def plotC1MultiplesGateway(gateways, number_of_devices, radius):
+def plotC1MultiplesGateway(gateways, number_of_devices, radius, save_data, sf_method):
 
-    devices_to_be_analized = DeviceDistribuition(number_of_devices, gateways, radius)
+    devices_to_be_analized = DeviceDistribuition(number_of_devices, gateways, radius, sf_method)
 
     devices_to_be_analized.averageDevicesDistribuition()
-    devices_to_be_analized.plotDevices("teste")
+    devices_to_be_analized.plotDevices("Device Distribuition")
     print(devices_to_be_analized.getDeviceInEachSF())
     
-
-    number_of_interferents = number_of_devices
-
     Q1IndividualDevices(devices_to_be_analized)
     H1IndividualDevices(devices_to_be_analized)
     devices_to_be_analized.updateC1Probability()
 
-    devices_to_be_analized.saveObjectData("c1_simulation")
+    devices_to_be_analized.saveObjectData(save_data)
 
 
 def plotQ1MultiplesGateway(gateways = [(6000,12000), (18000, 12000)], number_of_devices = 4000):
@@ -407,7 +404,6 @@ def checkGatewasInsideRadius(gateways, radius_size):
 
 if __name__== "__main__":
 
-
     parser = optparse.OptionParser( usage="Ex: ./energyProve.py --simulate --gateway=\"[|1500,2250|, |1500, 750|]\" --number_of_devices=500 --radius_size=3000")
 
     parser.add_option('--simulate',
@@ -423,8 +419,8 @@ if __name__== "__main__":
 
     parser.add_option('--sf_method',
         action="store", dest="sf_method",
-        help="Method used to set the SFs, could be: \"radial\", \"same_time_on_air\"", 
-        default=False)
+        help="Method used to set the SFs, could be: \"RADIAL\", \"SAME_TIME_ON_AIR\"", 
+        default="RADIAL")
 
     parser.add_option('--number_of_devices',
         action="store", dest="number_of_devices",
@@ -439,7 +435,7 @@ if __name__== "__main__":
     parser.add_option('--save_object_device_distribuition',
         action="store", dest="save_object_device_distribuition",
         help="Save the object of the class device distribuition on file \"arg\"", 
-        default=False)
+        default="der")
 
     parser.add_option('--plot_object_device_distribuition',
         action="store", dest="plot_object_device_distribuition",
@@ -498,7 +494,7 @@ if __name__== "__main__":
         print("The gateways is out of circle")
         exit(-1)
 
-    plotC1MultiplesGateway(gateways, number_of_devices, radius_size)
+    plotC1MultiplesGateway(gateways, number_of_devices, radius_size, options.save_object_device_distribuition, options.sf_method)
     #plotQ1MultiplesGateway()
     #plotH1MultiplesGateway()
     #plotStorageQ1MultiplesGateways()

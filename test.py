@@ -16,6 +16,10 @@ class TestUM(unittest.TestCase):
     def setUp(self):
         pass
 
+    def testGetSF(self):
+        getSF(500, 3000, method = "DISTANCE_AND_TIME_ON_AIR", number_of_devices=500)
+
+
     def test11(self):
         energy = lifeTimeWorkCalculator(100, 18.8, 14, 100)
         self.assertNotEqual( energy, 1810.432 )
@@ -109,7 +113,7 @@ class TestUM(unittest.TestCase):
 
         outage = H1Simulated(8, 2200)
         print("outage simulated %f" % outage)
-    """
+    
 
     def testAverageDevicesDistribuition(self):
         devices = DeviceDistribuition()
@@ -119,6 +123,6 @@ class TestUM(unittest.TestCase):
     def testQ1Simulated(self):
         outage = Q1Simulated(8000)
         self.assertAlmostEqual(outage, 0.9, delta=1)
-    
+    """
 if __name__ == '__main__':
     unittest.main()
