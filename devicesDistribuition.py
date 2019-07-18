@@ -12,7 +12,7 @@ import mplcursors
 #y_central = 12000 
 class DeviceDistribuition():
 
-    def __init__(self, number_of_devices, gateway_possition, radius, sf_method ):
+    def __init__(self, number_of_devices = 0, gateway_possition = None, radius = 0, sf_method = 0):
         self.sf_method = sf_method
         self.number_of_devices = number_of_devices
         self.coordenate_list = [0]*number_of_devices
@@ -26,7 +26,6 @@ class DeviceDistribuition():
         self.radius = radius
         self.add_devices = 0
         
-    
     def __del__(self):
         del self.number_of_devices
         del self.coordenate_list
@@ -73,8 +72,8 @@ class DeviceDistribuition():
     def __setSf(self):
 
         for idx in range(self.number_of_devices -1):
-            sf = getSF(min(self.getDeviceDistancesFromGateways(idx)), self.radius, self.sf_method, self.number_of_devices)    
 
+            sf = getSF(min(self.getDeviceDistancesFromGateways(idx)), self.radius, self.sf_method, self.number_of_devices)    
             self.sf_list[idx] = sf
 
     def updateC1Probability(self):
@@ -83,12 +82,13 @@ class DeviceDistribuition():
             self.c1_probability[idx] = self.q1_probability[idx]*self.h1_probability[idx]
 
     def getC1Probability(self, index):
+        print(index)
         return self.c1_probability[index]
 
-    def setH1probability(self, index, h1):
+    def setH1Probability(self, index, h1):
         self.h1_probability[index] = h1
 
-    def getH1probability(self, index):
+    def getH1Probability(self, index):
         return self.h1_probability[index]
 
     def setTransmissionPower(self, index, pot_dbm):
@@ -98,10 +98,10 @@ class DeviceDistribuition():
         return self.transmission_power_dbm[index]
 
 
-    def setQ1probability(self, index, q1):
+    def setQ1Probability(self, index, q1):
         self.q1_probability[index] = q1
 
-    def getQ1probability(self, index):
+    def getQ1Probability(self, index):
         return self.q1_probability[index]
 
     def getSFName(self, index):
@@ -174,20 +174,22 @@ class DeviceDistribuition():
             y.append(self.getY(i))
             
             if code == "Q1_PROB":
-                value.append(self.getQ1probability(i))
-                labels.append(""+str(self.getQ1probability(i))+"\n"+str(self.getSFName(i)))
+                value.append(self.getQ1Probability(i))
+                labels.append(""+str(self.getQ1Probability(i))+"\n"+str(self.getSFName(i)))
             elif code == "H1_PROB":
-                value.append(self.getH1probability(i))
-                labels.append(""+str(self.getH1probability(i))+"\n"+str(self.getSFName(i)))
+                value.append(self.getH1Probability(i))
+                labels.append(""+str(self.getH1Probability(i))+"\n"+str(self.getSFName(i)))
             elif code == "C1_PROB":
-                value.append(self.getC1probability(i))
-                labels.append(""+str(self.getC1probability(i))+"\n"+str(self.getSFName(i)))
+                print(i)
+                value.append(self.getC1Probability(i))
+                labels.append(""+str(self.getC1Probability(i))+"\n"+str(self.getSFName(i)))
 
         plt.scatter(x, y, c=value, vmin=min(value), vmax=1, cmap=cm)
         mplcursors.cursor(hover=True).connect(
             "add", lambda sel: sel.annotation.set_text(labels[sel.target.index]))
 
         plt.colorbar()
+        plt.title(title)
         plt.show()
 
     def plotQ1Devices(self, title):
@@ -213,17 +215,17 @@ class DeviceDistribuition():
         for i in range(self.getNumberOfDevices() - 1):
             
             if self.getSFNumber(i) == 7:
-                sf7.append(self.getQ1probability(i))
+                sf7.append(self.getQ1Probability(i))
             elif self.getSFNumber(i) == 8:
-                sf8.append(self.getQ1probability(i))
+                sf8.append(self.getQ1Probability(i))
             elif self.getSFNumber(i) == 9:
-                sf9.append(self.getQ1probability(i))
+                sf9.append(self.getQ1Probability(i))
             elif self.getSFNumber(i) == 10:
-                sf10.append(self.getQ1probability(i))
+                sf10.append(self.getQ1Probability(i))
             elif self.getSFNumber(i) == 11:
-                sf11.append(self.getQ1probability(i))
+                sf11.append(self.getQ1Probability(i))
             elif self.getSFNumber(i) == 12:
-                sf12.append(self.getQ1probability(i))
+                sf12.append(self.getQ1Probability(i))
 
         if(len(sf7) > 0):
             plt.hist(sf7, histtype=hist_type, color="blue", label="SF7")    

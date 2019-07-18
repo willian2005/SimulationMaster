@@ -159,42 +159,7 @@ def Q1ShiftedGateway(max_distance = 12000, gateway= [(12000,12000)], number_of_d
         q1sm[a[0]] = a[1]
     
     return q1sm, distances
-
-def plotStorageQ1MultiplesGateways():
-
-    device = DeviceDistribuition(1000, [(6000,12000), (18000, 12000)])
-    """
-    device.loadObjectData("output_data/DeviceDistribuition_poor_simulation2019-06-18_22:57.plt")
-    print(device.getDeviceInEachSF())
-    device.plotDevices("Distribuicao por SF")
-    device.plotQ1Devices("DER Q1")
-    device.plotQ1Histogram("Histograma da DER por SFs")
-    H1IndividualDevices(device)
-    device.plotH1Devices("H1 test")
-    """
-    device.loadObjectData("output_data/DeviceDistribuition_poor_simulation2019-06-18_16:26.plt")
-    print(device.getDeviceInEachSF())
-    device.plotDevices("Distribuicao por SF")
-    """
-    device.plotQ1Devices("DER Q1")
-    device.plotQ1Histogram("Histograma da DER por SFs")
-    """
-    H1IndividualDevices(device)
-    device.plotH1Devices("H1 test")
-
-    device.loadObjectData("output_data/DeviceDistribuition_poor_simulation2019-06-18_18:18.plt")
-    print(device.getDeviceInEachSF())
-    device.plotDevices("Distribuicao por SF")
-    device.plotQ1Devices("DER Q1")
-    device.plotQ1Histogram("Histograma da DER por SFs")
-"""
-    device.loadObjectData("output_data/DeviceDistribuition_poor_simulation2019-06-16_20:12.plt")
-    print(device.getDeviceInEachSF())
-    device.plotDevices("Distribuicao por SF")
-    device.plotQ1Devices("DER Q1")
-    device.plotQ1Histogram("Histograma da DER por SFs")
-"""
-def plotC1MultiplesGateway(gateways, number_of_devices, radius, save_data, sf_method):
+def simulateC1MultiplesGateway(gateways, number_of_devices, radius, save_data, sf_method):
 
     devices_to_be_analized = DeviceDistribuition(number_of_devices, gateways, radius, sf_method)
 
@@ -207,6 +172,253 @@ def plotC1MultiplesGateway(gateways, number_of_devices, radius, save_data, sf_me
     devices_to_be_analized.updateC1Probability()
 
     devices_to_be_analized.saveObjectData(save_data)
+
+def plotDeviceDistribuition(distribuition_object_path):
+
+    device_distribuition = DeviceDistribuition()
+    device_distribuition.loadObjectData(distribuition_object_path)
+    print(device_distribuition.getDeviceInEachSF())
+    device_distribuition.plotDevices("Device Distribuition")
+    device_distribuition.plotH1Devices("DER H1 distribuition")
+    device_distribuition.plotQ1Devices("DER Q1 distribuition")
+    device_distribuition.plotC1Devices("DER C1 distribuition")
+
+def Q1TheoricalSimulatedHaza():
+    
+    q1sm = np.zeros(30)
+
+    def processParallelQ1(distance, q, index):
+        temp = Q1Simulated(distance)
+        q.put((index, temp))
+        print("the distance: %d, outage: %f"% (distance, temp))
+    
+    q1t = []
+    #q1sm = []
+    distances = []
+    index = 0
+    q = Queue()
+    for distance in range(1, 12000, 400):
+        
+        p = Process(target=processParallelQ1, args=(distance, q, index)) 
+        p.start()
+        index = index +1
+        print("Lauching the thread: %d"% index)
+    p.join()
+
+    for i in range(0,30):
+        a = q.get()
+        q1sm[a[0]] = a[1]
+    
+    print(q1sm)
+
+    for i in range(1, 12000, 400):
+        q1t.append(Q1Theorical(i))
+        distances.append(i)
+
+    return q1t, q1sm, distances
+    
+def checkGatewasInsideRadius(gateways, radius_size):
+
+    ret = True
+    x_central_point = radius_size
+    y_central_point = radius_size
+    
+    for gw in gateways:
+        x_distance = abs(gw[0] - x_central_point)
+        y_distance = abs(gw[1] - y_central_point)
+        distance = math.sqrt(x_distance**2 + y_distance**2)
+        #print("Distance to gateway: %f", distance)
+        if(distance > radius_size):
+            ret = False
+    
+    return ret
+
+
+if __name__== "__main__":
+
+    parser = optparse.OptionParser( usage="Ex: ./energyProve.py --simulate --gateway=\"[|1500,2250|, |1500, 750|]\" --number_of_devices=500 --radius_size=3000")
+
+    parser.add_option('--simulate',
+        action="store_true", dest="simulate",
+        help="Simulate the network with the parameters, can't be used with --plot", 
+        default=False)
+
+    parser.add_option('--plot',
+        action="store_true", dest="plot",
+        help="Plot the data in a object device ditribuition,  should used with parameter, --plot_object_device_distribuition", 
+        default=False)
+
+
+    parser.add_option('--sf_method',
+        action="store", dest="sf_method",
+        help="Method used to set the SFs, could be: \"RADIAL\", \"SAME_TIME_ON_AIR\"", 
+        default="RADIAL")
+
+    parser.add_option('--number_of_devices',
+        action="store", dest="number_of_devices",
+        help="Number of devices in the network", 
+        default=False)
+
+    parser.add_option('--radius_size',
+        action="store", dest="radius_size",
+        help="The total radius of the network", 
+        default=False)
+    
+    parser.add_option('--save_object_device_distribuition',
+        action="store", dest="save_object_device_distribuition",
+        help="Save the object of the class device distribuition on file \"arg\"", 
+        default="der")
+
+    parser.add_option('--plot_object_device_distribuition',
+        action="store", dest="plot_object_device_distribuition",
+        help="Plot the object of the class device distribuition on file \"arg\"", 
+        default=False)
+
+    parser.add_option('--gateways',
+        action="store", dest="gateways",
+        help="list of gateways, ex:  \"[|X1,Y1|, |X2, Y2|]\", should be used with parameter --simulate",
+        default=False)
+
+    
+    options, args = parser.parse_args()
+
+    if(options.simulate != False):
+        print("Init the simulation with the parameters")
+
+        if(options.gateways != False):
+            string_gateways = options.gateways
+            gateways = []
+        else:
+            print("To run the simulation you need to specify the gateways")
+            exit(-1)
+        
+        if(options.number_of_devices != False):
+            number_of_devices = int(options.number_of_devices)
+        else:
+            print("To run the simulation you need to specify the number of devices")
+            exit(-1)
+        
+        if(options.radius_size != False):
+            radius_size = int(options.radius_size)
+        else: 
+            print("To run the simulation you need to specify the radius size")
+            exit(-1)
+            
+        try:
+            for part_str in string_gateways.split("|"):
+                if(len(part_str) > 2):
+                    x = int(part_str.split(",")[0])
+                    y = int(part_str.split(",")[1])
+                    gateways.append((x, y))
+                
+        except ValueError:
+            print("The sintax of variable --gateway is wrong, use ex: ./energyProve.py --simulate --gateway=\"[|6000,12000|, |18000, 12000|]\"")
+    
+        print("List of gateways")
+        print(gateways)
+    
+        if options.simulate and checkGatewasInsideRadius(gateways, radius_size) == False :
+            print("The gateways is out of circle")
+            exit(-1)
+        
+        simulateC1MultiplesGateway(gateways, number_of_devices, radius_size, options.save_object_device_distribuition, options.sf_method)
+
+    elif(options.plot != False ):
+
+        object_path = options.plot_object_device_distribuition
+
+        print("Plot the data in the file: %s" % object_path)
+        plotDeviceDistribuition(object_path)
+
+
+
+    #plotQ1MultiplesGateway()
+    #plotH1MultiplesGateway()
+    #plotStorageQ1MultiplesGateways()
+    #printTOA()   
+    #Q1Graphic ()
+    #H1graphics()
+
+    #plotQ1MultiplesGateway(gateways = [(12000,12000)])
+
+    #plotQ1MultiplesGateway(gateways = [(6000,6000), (18000, 6000), (12000,18000)])
+    #plotQ1MultiplesGateway(gateways = [(6000,6000), (18000, 6000), (6000, 18000), (18000, 18000)])
+    
+    
+    
+    #plotDefaultDeviceDistribuition([(6000,12000), (18000, 12000)], 4000)
+    #plotDefaultDeviceDistribuition([(6000,6000), (18000, 6000), (6000, 18000), (18000, 18000)], 4000)
+    
+    #max_distance = 12000
+    #gateway= [(6000,12000), ((18000,12000)) ]
+    #plotDefaultDeviceDistribuitionMultiplesGateway([(6000, 12000), (18000, 12000)], 4000)
+
+    """
+    max_distance = 14000
+    gateway= [(10000,12000)]
+    plotC1tShiftedGateway(max_distance, gateway)
+    
+    max_distance = 16000
+    gateway= (8000,12000)
+    plotC1tShiftedGateway(max_distance, gateway)
+
+    max_distance = 18000
+    gateway= (6000,12000)
+    plotC1tShiftedGateway(max_distance, gateway)
+
+    max_distance = 20000
+    gateway= (4000,12000)
+    plotC1tShiftedGateway(max_distance, gateway)
+    """
+    """
+    plotDefaultDeviceDistribuition((12000,12000), 4000)
+    plotDefaultDeviceDistribuition((10000,12000))
+    plotDefaultDeviceDistribuition((8000,12000))
+    plotDefaultDeviceDistribuition((6000,12000))
+    plotDefaultDeviceDistribuition((4000,12000))
+    """
+    #plotDefaultDeviceDistribuition()
+
+    #plotSavedData()
+    #plotC1tTheoricalSimulated()
+
+
+"""LIMBO
+
+def plotStorageQ1MultiplesGateways():
+
+    device = DeviceDistribuition(1000, [(6000,12000), (18000, 12000)])
+    
+    #device.loadObjectData("output_data/DeviceDistribuition_poor_simulation2019-06-18_22:57.plt")
+    #print(device.getDeviceInEachSF())
+    #device.plotDevices("Distribuicao por SF")
+    #device.plotQ1Devices("DER Q1")
+    #device.plotQ1Histogram("Histograma da DER por SFs")
+    #H1IndividualDevices(device)
+    #device.plotH1Devices("H1 test")
+    
+    device.loadObjectData("output_data/DeviceDistribuition_poor_simulation2019-06-18_16:26.plt")
+    print(device.getDeviceInEachSF())
+    device.plotDevices("Distribuicao por SF")
+    
+    #device.plotQ1Devices("DER Q1")
+    #device.plotQ1Histogram("Histograma da DER por SFs")
+    
+    H1IndividualDevices(device)
+    device.plotH1Devices("H1 test")
+
+    device.loadObjectData("output_data/DeviceDistribuition_poor_simulation2019-06-18_18:18.plt")
+    print(device.getDeviceInEachSF())
+    device.plotDevices("Distribuicao por SF")
+    device.plotQ1Devices("DER Q1")
+    device.plotQ1Histogram("Histograma da DER por SFs")
+
+    #device.loadObjectData("output_data/DeviceDistribuition_poor_simulation2019-06-16_20:12.plt")
+    #print(device.getDeviceInEachSF())
+    #device.plotDevices("Distribuicao por SF")
+    #device.plotQ1Devices("DER Q1")
+    #device.plotQ1Histogram("Histograma da DER por SFs")
+
 
 
 def plotQ1MultiplesGateway(gateways = [(6000,12000), (18000, 12000)], number_of_devices = 4000):
@@ -298,48 +510,15 @@ def plotDefaultDeviceDistribuition(gateways = [(6000,12000), (18000, 12000)], nu
     plt.scatter(-100, -1, c="brown", linewidths=0.01, label='SF12')
 
     #plot the centralized circuference
-    """for i in  range(0, 14000, 2000):
-        circle= plt.Circle((12000,12000), fill=False, radius= i)
-        ax=plt.gca()
-        ax.add_patch(circle)
-    """
+    #for i in  range(0, 14000, 2000):
+    #    circle= plt.Circle((12000,12000), fill=False, radius= i)
+    #    ax=plt.gca()
+    #    ax.add_patch(circle)
+    #
     plt.legend(loc='upper right')
     plt.title("Distribuição dos dispositivos")
     plt.savefig("output_data/device_distribuition_CYCLES_" + str(REPTION_TIMES_CYCLES) + "_PER_INTERACTION_" + str(REPTION_TIMES_PER_INTERACTION_Q1_SIM) + "_Gx_" + str(gateway[0]) + "_Gy_" + str(gateway[1]) + "_TOA_M_" + str(TOA_METHOD) + ".png")
 
-def Q1TheoricalSimulatedHaza():
-    
-    q1sm = np.zeros(30)
-
-    def processParallelQ1(distance, q, index):
-        temp = Q1Simulated(distance)
-        q.put((index, temp))
-        print("the distance: %d, outage: %f"% (distance, temp))
-    
-    q1t = []
-    #q1sm = []
-    distances = []
-    index = 0
-    q = Queue()
-    for distance in range(1, 12000, 400):
-        
-        p = Process(target=processParallelQ1, args=(distance, q, index)) 
-        p.start()
-        index = index +1
-        print("Lauching the thread: %d"% index)
-    p.join()
-
-    for i in range(0,30):
-        a = q.get()
-        q1sm[a[0]] = a[1]
-    
-    print(q1sm)
-
-    for i in range(1, 12000, 400):
-        q1t.append(Q1Theorical(i))
-        distances.append(i)
-
-    return q1t, q1sm, distances
 
 def plotC1tTheoricalSimulated():
 
@@ -385,162 +564,4 @@ def plotC1tShiftedGateway(max_distance = 12000, gateway_possition= (12000,12000)
     c1_list = [float(c1) for c1 in c1t]
     csvSaveData(gateway_possition[0], distance, h1_list, q1_list, c1_list)
 
-def checkGatewasInsideRadius(gateways, radius_size):
-
-    ret = True
-    x_central_point = radius_size
-    y_central_point = radius_size
-    
-    for gw in gateways:
-        x_distance = abs(gw[0] - x_central_point)
-        y_distance = abs(gw[1] - y_central_point)
-        distance = math.sqrt(x_distance**2 + y_distance**2)
-        #print("Distance to gateway: %f", distance)
-        if(distance > radius_size):
-            ret = False
-    
-    return ret
-
-
-if __name__== "__main__":
-
-    parser = optparse.OptionParser( usage="Ex: ./energyProve.py --simulate --gateway=\"[|1500,2250|, |1500, 750|]\" --number_of_devices=500 --radius_size=3000")
-
-    parser.add_option('--simulate',
-        action="store_true", dest="simulate",
-        help="Simulate the network with the parameters, can't be used with --plot", 
-        default=False)
-
-    parser.add_option('--plot',
-        action="store", dest="plot",
-        help="Plot the data in a object device ditribuition,  should used with parameter, --plot_object_device_distribuition", 
-        default=False)
-
-
-    parser.add_option('--sf_method',
-        action="store", dest="sf_method",
-        help="Method used to set the SFs, could be: \"RADIAL\", \"SAME_TIME_ON_AIR\"", 
-        default="RADIAL")
-
-    parser.add_option('--number_of_devices',
-        action="store", dest="number_of_devices",
-        help="Number of devices in the network", 
-        default=False)
-
-    parser.add_option('--radius_size',
-        action="store", dest="radius_size",
-        help="The total radius of the network", 
-        default=False)
-    
-    parser.add_option('--save_object_device_distribuition',
-        action="store", dest="save_object_device_distribuition",
-        help="Save the object of the class device distribuition on file \"arg\"", 
-        default="der")
-
-    parser.add_option('--plot_object_device_distribuition',
-        action="store", dest="plot_object_device_distribuition",
-        help="Plot the object of the class device distribuition on file \"arg\"", 
-        default=False)
-
-    parser.add_option('--gateways',
-        action="store", dest="gateways",
-        help="list of gateways, ex:  \"[|X1,Y1|, |X2, Y2|]\", should be used with parameter --simulate",
-        default=False)
-
-    
-    options, args = parser.parse_args()
-
-    if(options.simulate != False):
-        print("Init the simulation with the parameters")
-
-        if(options.gateways != False):
-            string_gateways = options.gateways
-            gateways = []
-        else:
-            print("To run the simulation you need to specify the gateways")
-            exit(-1)
-        
-        if(options.number_of_devices != False):
-            number_of_devices = int(options.number_of_devices)
-        else:
-            print("To run the simulation you need to specify the number of devices")
-            exit(-1)
-        
-        if(options.radius_size != False):
-            radius_size = int(options.radius_size)
-        else: 
-            print("To run the simulation you need to specify the radius size")
-            exit(-1)
-        
-
-    elif(options.plot != False):
-        print("Plot the data in the file: %s", options.plot_object_device_distribuition)
-
-
-    try:
-        for part_str in string_gateways.split("|"):
-            if(len(part_str) > 2):
-                x = int(part_str.split(",")[0])
-                y = int(part_str.split(",")[1])
-                gateways.append((x, y))
-                
-    except ValueError:
-        print("The sintax of variable --gateway is wrong, use ex: ./energyProve.py --simulate --gateway=\"[|6000,12000|, |18000, 12000|]\"")
-    
-    print("List of gateways")
-    print(gateways)
-
-    if options.simulate and checkGatewasInsideRadius(gateways, radius_size) == False :
-        print("The gateways is out of circle")
-        exit(-1)
-
-    plotC1MultiplesGateway(gateways, number_of_devices, radius_size, options.save_object_device_distribuition, options.sf_method)
-    #plotQ1MultiplesGateway()
-    #plotH1MultiplesGateway()
-    #plotStorageQ1MultiplesGateways()
-    #printTOA()   
-    #Q1Graphic ()
-    #H1graphics()
-
-    #plotQ1MultiplesGateway(gateways = [(12000,12000)])
-
-    #plotQ1MultiplesGateway(gateways = [(6000,6000), (18000, 6000), (12000,18000)])
-    #plotQ1MultiplesGateway(gateways = [(6000,6000), (18000, 6000), (6000, 18000), (18000, 18000)])
-    
-    
-    
-    #plotDefaultDeviceDistribuition([(6000,12000), (18000, 12000)], 4000)
-    #plotDefaultDeviceDistribuition([(6000,6000), (18000, 6000), (6000, 18000), (18000, 18000)], 4000)
-    
-    #max_distance = 12000
-    #gateway= [(6000,12000), ((18000,12000)) ]
-    #plotDefaultDeviceDistribuitionMultiplesGateway([(6000, 12000), (18000, 12000)], 4000)
-
-    """
-    max_distance = 14000
-    gateway= [(10000,12000)]
-    plotC1tShiftedGateway(max_distance, gateway)
-    
-    max_distance = 16000
-    gateway= (8000,12000)
-    plotC1tShiftedGateway(max_distance, gateway)
-
-    max_distance = 18000
-    gateway= (6000,12000)
-    plotC1tShiftedGateway(max_distance, gateway)
-
-    max_distance = 20000
-    gateway= (4000,12000)
-    plotC1tShiftedGateway(max_distance, gateway)
-    """
-    """
-    plotDefaultDeviceDistribuition((12000,12000), 4000)
-    plotDefaultDeviceDistribuition((10000,12000))
-    plotDefaultDeviceDistribuition((8000,12000))
-    plotDefaultDeviceDistribuition((6000,12000))
-    plotDefaultDeviceDistribuition((4000,12000))
-    """
-    #plotDefaultDeviceDistribuition()
-
-    #plotSavedData()
-    #plotC1tTheoricalSimulated()
+"""
