@@ -174,7 +174,7 @@ def H1IndividualDevices(devices_to_be_analized, n=2.75, bw = 125e3):
                     break
 
         print("sum %d", sum/REPTION_TIMES)
-        devices_to_be_analized.setH1probability(idx, sum/REPTION_TIMES)
+        devices_to_be_analized.setH1Probability(idx, sum/REPTION_TIMES)
     return 
 
 def Q1IndividualDevices(devices_to_be_analized, n=2.75):
@@ -249,7 +249,7 @@ def Q1IndividualDevices(devices_to_be_analized, n=2.75):
         
     for idx in range(devices_to_be_analized.getNumberOfDevices() - 1):
         devices_outages[idx] = devices_outages[idx]/REPTION_TIMES_CYCLES
-        devices_to_be_analized.setQ1probability(idx, devices_outages[idx])
+        devices_to_be_analized.setQ1Probability(idx, devices_outages[idx])
         print("SF - %d, outage - %f"%(devices_to_be_analized.getSFNumber(idx), devices_outages[idx]))
     return 
 
