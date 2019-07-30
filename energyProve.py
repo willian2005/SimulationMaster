@@ -12,6 +12,7 @@ from energyUtils import *
 from loraTheoricalSimulation import *
 from devicesDistribuition import *
 from lorawan_toa.lorawan_toa import get_toa
+from operator import truediv
 import optparse
 
 calc_semtech_power_mw = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
@@ -173,6 +174,42 @@ def simulateC1MultiplesGateway(gateways, number_of_devices, radius, save_data, s
 
     devices_to_be_analized.saveObjectData(save_data)
 
+def plotEnergyConsumption(distribuition_object_path, payload_size, package_per_day, battery):
+
+    device_distribuition = DeviceDistribuition()
+    #calcule
+    # - Average power in each SF
+    # - Average power of all devices in network
+    # - Average of life time in each SF
+    # - Average of life time of all devices in network
+    
+    device_distribuition = DeviceDistribuition()
+    device_distribuition.loadObjectData(distribuition_object_path)
+    average_power_per_sf = sum_power_per_sf = 6*[0]
+    average_life_time_per_sf = sum_life_time_per_sf = 6*[0]
+    average_network_power = sum_network_power = 0
+        
+    for i in range(sum(device_distribuition.getDeviceInEachSF())):
+        toa = get_toa(payload_size, device_distribuition.getSFNumber(i))['t_packet']
+        power_per_package = packageWorkCalculator(toa, device_distribuition.getTransmissionPower(i))
+        life_time_device, one_day_work = batteryTimeOfLife(battery, package_per_day, toa, device_distribuition.getTransmissionPower(i), "tx")
+#        print("SF %d, one_day_work %f"%(device_distribuition.getSFNumber(i), one_day_work))
+        sum_network_power = sum_network_power+power_per_package
+        sf_base = device_distribuition.getSFNumber(i) - 7
+
+        sum_power_per_sf[sf_base] = sum_power_per_sf[sf_base] + power_per_package
+        sum_life_time_per_sf[sf_base] = sum_life_time_per_sf[sf_base] + life_time_device
+
+    average_network_power = sum_network_power/sum(device_distribuition.getDeviceInEachSF())
+    average_power_per_sf = list(map(truediv, sum_power_per_sf, device_distribuition.getDeviceInEachSF()))
+    average_life_time_per_sf = list(map(truediv, sum_life_time_per_sf, device_distribuition.getDeviceInEachSF()))
+
+    print("Package - Average power per SF\n", average_power_per_sf)
+    print("Package - Sum power per SF\n", sum_power_per_sf)
+    print("Package - Average networt power \n", average_network_power)
+    print("Package - Sum networt power \n", sum_network_power)
+    print("Life time per SF\n", average_life_time_per_sf)
+
 def plotDeviceDistribuition(distribuition_object_path):
 
     device_distribuition = DeviceDistribuition()
@@ -182,6 +219,7 @@ def plotDeviceDistribuition(distribuition_object_path):
     device_distribuition.plotH1Devices("DER H1 distribuition")
     device_distribuition.plotQ1Devices("DER Q1 distribuition")
     device_distribuition.plotC1Devices("DER C1 distribuition")
+    device_distribuition.plotQ1Histogram("DER Histogram")
 
 def Q1TheoricalSimulatedHaza():
     
@@ -247,6 +285,28 @@ if __name__== "__main__":
         action="store_true", dest="plot",
         help="Plot the data in a object device ditribuition,  should used with parameter, --plot_object_device_distribuition", 
         default=False)
+    
+    #TODO - implement independent from --plot
+    parser.add_option('--energy_consumption',
+        action="store_true", dest="energy_consumption",
+        help="Calculate the energy used by each group of SF devices, should be used with --plot", 
+        default=False)
+
+    parser.add_option('--package_per_day',
+        action="store", dest="package_per_day",
+        help="Is the number of package sended by the day, the default is 100, should be used with --energy_consumption", 
+        default=100)
+    
+    parser.add_option('--battery',
+        action="store", dest="battery",
+        help="Is the charge of a battery (in Joules), the default is 13320, used to calculate the life time of device, should be used with --energy_consumption", 
+        default=13320)
+
+
+    parser.add_option('--payload_size',
+        action="store", dest="payload_size",
+        help="Is the size of payload, the default is 25, should be used with --energy_consumption", 
+        default=25)
 
 
     parser.add_option('--sf_method',
@@ -279,26 +339,27 @@ if __name__== "__main__":
         help="list of gateways, ex:  \"[|X1,Y1|, |X2, Y2|]\", should be used with parameter --simulate",
         default=False)
 
+
     
     options, args = parser.parse_args()
 
-    if(options.simulate != False):
+    if(options.simulate == True):
         print("Init the simulation with the parameters")
 
-        if(options.gateways != False):
+        if(options.gateways == True):
             string_gateways = options.gateways
             gateways = []
         else:
             print("To run the simulation you need to specify the gateways")
             exit(-1)
         
-        if(options.number_of_devices != False):
+        if(options.number_of_devices == True):
             number_of_devices = int(options.number_of_devices)
         else:
             print("To run the simulation you need to specify the number of devices")
             exit(-1)
         
-        if(options.radius_size != False):
+        if(options.radius_size == True):
             radius_size = int(options.radius_size)
         else: 
             print("To run the simulation you need to specify the radius size")
@@ -323,13 +384,15 @@ if __name__== "__main__":
         
         simulateC1MultiplesGateway(gateways, number_of_devices, radius_size, options.save_object_device_distribuition, options.sf_method)
 
-    elif(options.plot != False ):
+    elif(options.plot == True ):
 
         object_path = options.plot_object_device_distribuition
 
         print("Plot the data in the file: %s" % object_path)
-        plotDeviceDistribuition(object_path)
+        if(options.energy_consumption == True):
+            plotEnergyConsumption(object_path, options.payload_size, options.package_per_day, options.battery)
 
+        plotDeviceDistribuition(object_path)
 
 
     #plotQ1MultiplesGateway()

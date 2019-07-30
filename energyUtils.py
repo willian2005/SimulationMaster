@@ -4,7 +4,7 @@ from mathUtils import *
 
 import math
 
-power_dbm_to_mA = [(0, 22), (7, 25), (14, 44), (17, 90), (20, 125)]
+power_dbm_to_mA = [(0, 22), (7, 25), (14, 44), (17, 90), (19, 115), (20, 125)]
 
 current_sleep_mA_semtech = 0.0000001
 current_idle_mA_semtech = current_sleep_mA_semtech
@@ -61,7 +61,7 @@ def workInBaterry(voltage, current_mAh):
     work_J = jouleCalculator(voltage*(current_mAh/1000), 60*60)['J']
     return work_J
 
-def lifeTimeWorkCalculator(life_time_sec, time_to_send_a_tx_ms, tx_power_in_dbm, number_of_package, mode = 'tx'):
+def lifeTimeWorkCalculator(life_time_sec, time_to_send_a_tx_ms, tx_power_in_dbm, number_of_package, mode = 'tx_rx'):
     '''
     Parameters
         life_time_sec: is the time that should be calculated the energy expended by the device
@@ -121,17 +121,18 @@ def lifeTimeWorkCalculator(life_time_sec, time_to_send_a_tx_ms, tx_power_in_dbm,
     
     return total_work
     
-def batteryTimeOfLife(joules, messages_in_day, time_to_send_a_tx_ms, tx_power_in_dbm):
+def batteryTimeOfLife(joules, messages_in_day, time_to_send_a_tx_ms, tx_power_in_dbm, transmission_mode = "tx"):
     '''
     Parameters
         joules: Is the amount of work in a battery
         messages_in_day: is the number of messages sended in a day
         time_to_send_a_tx_ms: is the TOA on tx mode in milisecond
         tx_power_in_dbm: is the tx power in dbm
+        transmission_mode = 
     Return 
         return the number of days that a battery could supply energy
          send a specific number of messages a day
     '''
 
-    work_in_day = lifeTimeWorkCalculator(24*60*60, time_to_send_a_tx_ms, tx_power_in_dbm, messages_in_day, mode = 'tx')
+    work_in_day = lifeTimeWorkCalculator(24*60*60, time_to_send_a_tx_ms, tx_power_in_dbm, messages_in_day, mode = transmission_mode)
     return (joules/work_in_day), work_in_day

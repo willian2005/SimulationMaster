@@ -82,7 +82,6 @@ class DeviceDistribuition():
             self.c1_probability[idx] = self.q1_probability[idx]*self.h1_probability[idx]
 
     def getC1Probability(self, index):
-        print(index)
         return self.c1_probability[index]
 
     def setH1Probability(self, index, h1):
@@ -180,7 +179,6 @@ class DeviceDistribuition():
                 value.append(self.getH1Probability(i))
                 labels.append(""+str(self.getH1Probability(i))+"\n"+str(self.getSFName(i)))
             elif code == "C1_PROB":
-                print(i)
                 value.append(self.getC1Probability(i))
                 labels.append(""+str(self.getC1Probability(i))+"\n"+str(self.getSFName(i)))
 
@@ -215,17 +213,17 @@ class DeviceDistribuition():
         for i in range(self.getNumberOfDevices() - 1):
             
             if self.getSFNumber(i) == 7:
-                sf7.append(self.getQ1Probability(i))
+                sf7.append(self.getC1Probability(i))
             elif self.getSFNumber(i) == 8:
-                sf8.append(self.getQ1Probability(i))
+                sf8.append(self.getC1Probability(i))
             elif self.getSFNumber(i) == 9:
-                sf9.append(self.getQ1Probability(i))
+                sf9.append(self.getC1Probability(i))
             elif self.getSFNumber(i) == 10:
-                sf10.append(self.getQ1Probability(i))
+                sf10.append(self.getC1Probability(i))
             elif self.getSFNumber(i) == 11:
-                sf11.append(self.getQ1Probability(i))
+                sf11.append(self.getC1Probability(i))
             elif self.getSFNumber(i) == 12:
-                sf12.append(self.getQ1Probability(i))
+                sf12.append(self.getC1Probability(i))
 
         if(len(sf7) > 0):
             plt.hist(sf7, histtype=hist_type, color="blue", label="SF7")    
