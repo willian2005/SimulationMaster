@@ -161,15 +161,16 @@ def H1IndividualDevices(devices_to_be_analized, n=2.75, bw = 125e3):
     for idx in range(devices_to_be_analized.getNumberOfDevices() - 1):
 
         print("PT TX %d", devices_to_be_analized.getTransmissionPower(idx))
-        pl_tx = (10**(devices_to_be_analized.getTransmissionPower(idx)/10))/1e3
+        pw_tx = (10**(devices_to_be_analized.getTransmissionPower(idx)/10))/1e3
         sensibility = (10**(loraSensitivity(devices_to_be_analized.getSFNumber(idx), bw)/10))/1e3
         sum = 0
 
         for i in range(REPTION_TIMES):
-            h_d1 = math.sqrt(0.5)*abs(np.random.randn(1) + np.random.randn(1)*j )
             
             for idx_gw, gateway in enumerate(devices_to_be_analized.getGateways()):
-                if (float(pl_tx*friisEquation(int(devices_to_be_analized.getDeviceDistancesFromGateways(idx)[idx_gw]), n)*h_d1**2)) >= sensibility:
+
+                h_d1 = math.sqrt(0.5)*abs(np.random.randn(1) + np.random.randn(1)*j )
+                if (float(pw_tx*friisEquation(int(devices_to_be_analized.getDeviceDistancesFromGateways(idx)[idx_gw]), n)*h_d1**2)) >= sensibility:
                     sum = sum + 1
                     break
 
