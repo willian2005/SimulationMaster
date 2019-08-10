@@ -174,7 +174,7 @@ def simulateC1MultiplesGateway(gateways, number_of_devices, radius, save_data, s
 
     devices_to_be_analized.saveObjectData(save_data)
 
-def plotEnergyConsumption(distribuition_object_path, payload_size, package_per_day, battery):
+def plotEnergyConsumption(distribuition_object_path, payload_size, package_per_day, battery, tx_mode):
 
     device_distribuition = DeviceDistribuition()
     #calcule
@@ -192,7 +192,7 @@ def plotEnergyConsumption(distribuition_object_path, payload_size, package_per_d
     for i in range(sum(device_distribuition.getDeviceInEachSF())):
         toa = get_toa(payload_size, device_distribuition.getSFNumber(i))['t_packet']
         power_per_package = packageWorkCalculator(toa, device_distribuition.getTransmissionPower(i))
-        life_time_device, one_day_work = batteryTimeOfLife(battery, package_per_day, toa, device_distribuition.getTransmissionPower(i), "tx")
+        life_time_device, one_day_work = batteryTimeOfLife(battery, package_per_day, toa, device_distribuition.getTransmissionPower(i), tx_mode)
 #        print("SF %d, one_day_work %f"%(device_distribuition.getSFNumber(i), one_day_work))
         sum_network_power = sum_network_power+power_per_package
         sf_base = device_distribuition.getSFNumber(i) - 7
@@ -219,7 +219,7 @@ def plotDeviceDistribuition(distribuition_object_path):
     device_distribuition.plotH1Devices("DER H1 distribuition")
     device_distribuition.plotQ1Devices("DER Q1 distribuition")
     device_distribuition.plotC1Devices("DER C1 distribuition")
-    device_distribuition.plotQ1Histogram("DER Histogram")
+    device_distribuition.plotC1Histogram("DER Histogram")
 
 def Q1TheoricalSimulatedHaza():
     
@@ -255,7 +255,7 @@ def Q1TheoricalSimulatedHaza():
 
     return q1t, q1sm, distances
     
-def checkGatewasInsideRadius(gateways, radius_size):
+def checkGatewaysIsInsideRadius(gateways, radius_size):
 
     ret = True
     x_central_point = radius_size
@@ -302,6 +302,10 @@ if __name__== "__main__":
         help="Is the charge of a battery (in Joules), the default is 13320, used to calculate the life time of device, should be used with --energy_consumption", 
         default=13320)
 
+    parser.add_option('--tx_mode',
+        action="store", dest="tx_mode",
+        help="Is the number of rx windows in receive data, could be \"tx\", \"tx_rx\", \"tx_rx_rx\", the default is \"tx\", used to calculate the life time of device, should be used with --energy_consumption", 
+        default="tx")
 
     parser.add_option('--payload_size',
         action="store", dest="payload_size",
@@ -346,20 +350,21 @@ if __name__== "__main__":
     if(options.simulate == True):
         print("Init the simulation with the parameters")
 
-        if(options.gateways == True):
+        if(options.gateways != False):
             string_gateways = options.gateways
             gateways = []
         else:
             print("To run the simulation you need to specify the gateways")
+            print(options.gateways)
             exit(-1)
         
-        if(options.number_of_devices == True):
+        if(options.number_of_devices != False):
             number_of_devices = int(options.number_of_devices)
         else:
             print("To run the simulation you need to specify the number of devices")
             exit(-1)
         
-        if(options.radius_size == True):
+        if(options.radius_size != False):
             radius_size = int(options.radius_size)
         else: 
             print("To run the simulation you need to specify the radius size")
@@ -378,7 +383,7 @@ if __name__== "__main__":
         print("List of gateways")
         print(gateways)
     
-        if options.simulate and checkGatewasInsideRadius(gateways, radius_size) == False :
+        if options.simulate and checkGatewaysIsInsideRadius(gateways, radius_size) == False :
             print("The gateways is out of circle")
             exit(-1)
         
@@ -390,7 +395,7 @@ if __name__== "__main__":
 
         print("Plot the data in the file: %s" % object_path)
         if(options.energy_consumption == True):
-            plotEnergyConsumption(object_path, options.payload_size, options.package_per_day, options.battery)
+            plotEnergyConsumption(object_path, options.payload_size, options.package_per_day, options.battery, options.tx_mode)
 
         plotDeviceDistribuition(object_path)
 

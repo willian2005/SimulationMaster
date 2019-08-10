@@ -188,7 +188,9 @@ class DeviceDistribuition():
 
         plt.colorbar()
         plt.title(title)
+        plt.savefig(str(title+code))
         plt.show()
+        
 
     def plotQ1Devices(self, title):
         self.__plotDevices("Q1_PROB", title)
@@ -199,7 +201,7 @@ class DeviceDistribuition():
     def plotC1Devices(self, title):
         self.__plotDevices("C1_PROB", title)
 
-    def plotQ1Histogram(self, title, hist_type = 'step'):
+    def plotC1Histogram(self, title, hist_type = 'step'):
 
         plt.close('all')
         plt.figure(1)
@@ -240,6 +242,7 @@ class DeviceDistribuition():
         
         plt.title(title)
         plt.legend(loc='upper right')
+        plt.savefig(str(title+"C1_histogram"))
         plt.show()
 
     def plotDevices(self, title):
@@ -276,6 +279,7 @@ class DeviceDistribuition():
 
         plt.legend(loc='upper right')
         plt.title(title)
+        plt.savefig(str("Device_distribuition"))
         plt.show()
 
     def averageDevicesDistribuition(self):
