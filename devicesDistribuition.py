@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import _pickle as cPickle
 from time import gmtime, strftime
 import mplcursors
+from operator import itemgetter, attrgetter
 
 #RADIUS = 12000
 #x_central = 12000 
@@ -71,10 +72,17 @@ class DeviceDistribuition():
     #in this function the device_list should have the gateway possition
     def __setSf(self):
 
+        distance_from_closer_gateway = []
         for idx in range(self.number_of_devices -1):
-
-            sf = getSF(min(self.getDeviceDistancesFromGateways(idx)), self.radius, self.sf_method, self.number_of_devices)    
-            self.sf_list[idx] = sf
+            
+            distance_from_closer_gateway.append((idx, min(self.getDeviceDistancesFromGateways(idx)))) 
+        #ordem the devices from the closer gateway    
+        distance_from_closer_gateway = sorted(distance_from_closer_gateway, key=itemgetter(1))
+        
+        for idx in range(self.number_of_devices -1):
+            priority_device = distance_from_closer_gateway[idx][0]
+            sf = getSF(min(self.getDeviceDistancesFromGateways(priority_device)), self.radius, self.sf_method, self.number_of_devices)    
+            self.sf_list[priority_device] = sf
 
     def updateC1Probability(self):
         
