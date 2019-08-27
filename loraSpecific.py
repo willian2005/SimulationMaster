@@ -1,4 +1,6 @@
 import math
+from mathUtils import *
+from linkBudget import *
 
 snr_per_sf_datasheet = [(7, -7.5), (8, -10), (9, -12.5), (10, -15), (11, -17.5), (12, -20)] #extraxt from datasheet
 snr_qsf_raza_125bw = [(7, -6), (8, -9), (9, -12), (10, -15), (11, -17.5), (12, -20)] #extraxt from raza
@@ -44,7 +46,8 @@ def getSF(distance, max_radius, method , number_of_devices):
     #    print(percent_time_on_air)
     #    print(devices_time_on_air)
     return [sf, int_sf]
-    
+
+
 def loraSensitivity(sf, bw):
     """
     Considering a package of 25 bytes

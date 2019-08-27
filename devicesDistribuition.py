@@ -1,6 +1,7 @@
 import math 
 from random import randint
 import numpy as np
+from loraTheoricalSimulation import *
 from loraSpecific import *
 import matplotlib.pyplot as plt
 import _pickle as cPickle
@@ -13,7 +14,9 @@ from operator import itemgetter, attrgetter
 #y_central = 12000 
 class DeviceDistribuition():
 
-    def __init__(self, number_of_devices = 0, gateway_possition = None, radius = 0, sf_method = 0):
+    def __init__(self, number_of_devices = 0, gateway_possition = None, radius = 0, sf_method = 0, transmission_power = 19, power_method = "STATIC"):
+        
+        self.power_method = power_method
         self.sf_method = sf_method
         self.number_of_devices = number_of_devices
         self.coordenate_list = [0]*number_of_devices
@@ -22,7 +25,7 @@ class DeviceDistribuition():
         self.q1_probability = [0]*number_of_devices
         self.h1_probability = [0]*number_of_devices
         self.c1_probability = [0]*number_of_devices
-        self.transmission_power_dbm = [19]*number_of_devices
+        self.transmission_power_dbm = [transmission_power]*number_of_devices
         self.gateway_list = gateway_possition
         self.radius = radius
         self.add_devices = 0
@@ -84,6 +87,15 @@ class DeviceDistribuition():
             sf = getSF(min(self.getDeviceDistancesFromGateways(priority_device)), self.radius, self.sf_method, self.number_of_devices)    
             self.sf_list[priority_device] = sf
 
+    def __setPowerDevice(self):
+
+        if self.power_method == "FULL_RANGE":
+            H1_target = 0.9
+            for idx in range(self.number_of_devices -1):
+                power = P1TheoricalFromH1(H1_target, self.getSFNumber(idx), min(self.getDeviceDistancesFromGateways(idx)))
+                print(power)
+                self.setTransmissionPower(idx, power)
+                
     def updateC1Probability(self):
         
         for idx in range(self.number_of_devices -1):
@@ -189,6 +201,9 @@ class DeviceDistribuition():
             elif code == "C1_PROB":
                 value.append(self.getC1Probability(i))
                 labels.append(""+str(self.getC1Probability(i))+"\n"+str(self.getSFName(i)))
+            elif code == "POWER":
+                value.append(self.getTransmissionPower(i))
+                labels.append(""+str(self.getTransmissionPower(i))+"\n"+str(self.getSFName(i)))
 
         plt.scatter(x, y, c=value, vmin=min(value), vmax=1, cmap=cm)
         mplcursors.cursor(hover=True).connect(
@@ -208,6 +223,9 @@ class DeviceDistribuition():
 
     def plotC1Devices(self, title):
         self.__plotDevices("C1_PROB", title)
+
+    def plotDevicesPower(self, title):
+        self.__plotDevices("POWER", title)
 
     def plotC1Histogram(self, title, hist_type = 'step'):
 
@@ -309,6 +327,7 @@ class DeviceDistribuition():
 
         self.__setGatewayDistance()
         self.__setSf()
+        self.__setPowerDevice()
     """
     def randomDevicesDistribuition(self, number_of_devices, gateways):
 

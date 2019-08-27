@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from energyUtils import *
 from loraTheoricalSimulation import *
+from loraInterativeSimulation import *
 from devicesDistribuition import *
 from lorawan_toa.lorawan_toa import get_toa
 from operator import truediv
@@ -160,12 +161,13 @@ def Q1ShiftedGateway(max_distance = 12000, gateway= [(12000,12000)], number_of_d
         q1sm[a[0]] = a[1]
     
     return q1sm, distances
-def simulateC1MultiplesGateway(gateways, number_of_devices, radius, save_data, sf_method):
+def simulateC1MultiplesGateway(gateways, number_of_devices, radius, save_data, sf_method, device_power, power_method):
 
-    devices_to_be_analized = DeviceDistribuition(number_of_devices, gateways, radius, sf_method)
+    devices_to_be_analized = DeviceDistribuition(number_of_devices, gateways, radius, sf_method, device_power, power_method)
 
     devices_to_be_analized.averageDevicesDistribuition()
     devices_to_be_analized.plotDevices("Device Distribuition")
+    devices_to_be_analized.plotDevicesPower("Device Power")
     print(devices_to_be_analized.getDeviceInEachSF())
     
     Q1IndividualDevices(devices_to_be_analized)
@@ -343,12 +345,34 @@ if __name__== "__main__":
         help="list of gateways, ex:  \"[|X1,Y1|, |X2, Y2|]\", should be used with parameter --simulate",
         default=False)
 
+    parser.add_option('--device_power_variable',
+        action="store", dest="device_power_variable",
+        help="Set the power of the device, if not set the default is 19dBm. The options are: power_fullrange and power_lora_range.\
+        Power fullrange try to set the H1 to 0.9, to do it, change the power of device with analog values. \
+        Lora range, try to set the H1 to 0.9, set the power of the device in values possible by LoRa.", 
+        default=False)
+
 
     
     options, args = parser.parse_args()
 
     if(options.simulate == True):
         print("Init the simulation with the parameters")
+
+        if(options.device_power_variable != False):
+            
+            device_power = 0
+            if options.device_power_variable == "power_fullrange":
+                power_method = "FULL_RANGE"
+            elif options.device_power_variable == "power_lora_range":
+                power_method = "LORA_RANGE"
+            else:
+                print("Power method is unknow, the options are: --device_power_variable=\"power_fullrange\" \
+                and --device_power_variable=\"power_lora_range\"")
+                exit(-1)
+        else:
+            power_method = "STATIC"
+            device_power = 19
 
         if(options.gateways != False):
             string_gateways = options.gateways
@@ -386,8 +410,8 @@ if __name__== "__main__":
         if options.simulate and checkGatewaysIsInsideRadius(gateways, radius_size) == False :
             print("The gateways is out of circle")
             exit(-1)
-        
-        simulateC1MultiplesGateway(gateways, number_of_devices, radius_size, options.save_object_device_distribuition, options.sf_method)
+
+        simulateC1MultiplesGateway(gateways, number_of_devices, radius_size, options.save_object_device_distribuition, options.sf_method, device_power, power_method)
 
     elif(options.plot == True ):
 

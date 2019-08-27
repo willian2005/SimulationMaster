@@ -22,3 +22,11 @@ def varianceWhiteNoise(bw = 125000, noise_figure = 6):
     """
     noise = (10**((-204+noise_figure+(10*math.log10(bw)))/10)) #;  % Watts^2 - Variance of Additive White Gaussian Noise
     return noise
+    
+# Function to convert from mW to dBm
+def mW2dBm(mW):
+    return 10.*math.log10(mW)
+
+# Function to convert from dBm to mW
+def dBm2mW(dBm):
+    return 10**((dBm)/10.)
