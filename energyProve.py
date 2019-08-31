@@ -167,7 +167,7 @@ def simulateC1MultiplesGateway(gateways, number_of_devices, radius, save_data, s
 
     devices_to_be_analized.averageDevicesDistribuition()
     devices_to_be_analized.plotDevices("Device Distribuition")
-    devices_to_be_analized.plotDevicesPower("Device Power")
+    devices_to_be_analized.plotDevicesPower("Device Power", "max_min")
     print(devices_to_be_analized.getDeviceInEachSF())
     
     Q1IndividualDevices(devices_to_be_analized)
@@ -212,15 +212,17 @@ def plotEnergyConsumption(distribuition_object_path, payload_size, package_per_d
     print("Package - Sum networt power \n", sum_network_power)
     print("Life time per SF\n", average_life_time_per_sf)
 
-def plotDeviceDistribuition(distribuition_object_path):
+def plotDeviceDistribuition(distribuition_object_path, plot_range_method):
 
     device_distribuition = DeviceDistribuition()
     device_distribuition.loadObjectData(distribuition_object_path)
     print(device_distribuition.getDeviceInEachSF())
     device_distribuition.plotDevices("Device Distribuition")
-    device_distribuition.plotH1Devices("DER H1 distribuition")
-    device_distribuition.plotQ1Devices("DER Q1 distribuition")
-    device_distribuition.plotC1Devices("DER C1 distribuition")
+    device_distribuition.plotDevicesPower("Power of devices", plot_range_method)
+    device_distribuition.plotH1Devices("DER H1 distribuition", plot_range_method)
+    device_distribuition.plotQ1Devices("DER Q1 distribuition", plot_range_method)
+    device_distribuition.plotC1Devices("DER C1 distribuition", plot_range_method)
+
     device_distribuition.plotC1Histogram("DER Histogram")
 
 def Q1TheoricalSimulatedHaza():
@@ -352,7 +354,11 @@ if __name__== "__main__":
         Lora range, try to set the H1 to 0.9, set the power of the device in values possible by LoRa.", 
         default=False)
 
-
+    parser.add_option('--plot_range',
+        action="store", dest="plot_range",
+        help="Define the way that the range of plots should be showed, options: 1_min, max_min\
+        Should be used with --plot.",
+        default="1_min")
     
     options, args = parser.parse_args()
 
@@ -420,8 +426,14 @@ if __name__== "__main__":
         print("Plot the data in the file: %s" % object_path)
         if(options.energy_consumption == True):
             plotEnergyConsumption(object_path, options.payload_size, options.package_per_day, options.battery, options.tx_mode)
+        
+        if(options.plot_range != "1_min" and options.plot_range != "max_min" ):
+            print("Option --plot_range with wrong value. \
+            The options are --plot_range=\"1_min\" or --plot_range=\"max_min\" ")
+            print("Using the value, %s"%options.plot_range)
+            exit(-1)
 
-        plotDeviceDistribuition(object_path)
+        plotDeviceDistribuition(object_path, options.plot_range)
 
 
     #plotQ1MultiplesGateway()

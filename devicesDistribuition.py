@@ -89,12 +89,19 @@ class DeviceDistribuition():
 
     def __setPowerDevice(self):
 
-        if self.power_method == "FULL_RANGE":
+        if self.power_method == "FULL_RANGE" or self.power_method == "LORA_RANGE":
+            
             H1_target = 0.9
             for idx in range(self.number_of_devices -1):
                 power = P1TheoricalFromH1(H1_target, self.getSFNumber(idx), min(self.getDeviceDistancesFromGateways(idx)))
-                print(power)
+                if self.power_method == "LORA_RANGE":
+                    power = math.ceil(power)
+                    if power < 2:
+                        power = 2
+                    elif power > 20:
+                        power = 20
                 self.setTransmissionPower(idx, power)
+        
                 
     def updateC1Probability(self):
         
@@ -166,7 +173,7 @@ class DeviceDistribuition():
 
     def saveObjectData(self, file_name):
         
-        f = open("./output_data/"+"DeviceDistribuition_"+file_name+strftime("%Y-%m-%d_%H:%M", gmtime())+".plt", 'wb')
+        f = open("./output_data/"+"DeviceDistribuition_"+file_name+strftime("%Y-%m-%d_%H_%M", gmtime())+".plt", 'wb')
         cPickle.dump(self.__dict__, f, 2)
         f.close()
    
@@ -178,7 +185,7 @@ class DeviceDistribuition():
 
         self.__dict__.update(tmp_dict) 
  
-    def __plotDevices(self, code, title):
+    def __plotDevices(self, code, title, plot_range):
 
         fig = plt.figure()
         #cm = plt.cm.get_cmap('RdYlBu')
@@ -204,10 +211,14 @@ class DeviceDistribuition():
             elif code == "POWER":
                 value.append(self.getTransmissionPower(i))
                 labels.append(""+str(self.getTransmissionPower(i))+"\n"+str(self.getSFName(i)))
-
-        plt.scatter(x, y, c=value, vmin=min(value), vmax=1, cmap=cm)
-        mplcursors.cursor(hover=True).connect(
-            "add", lambda sel: sel.annotation.set_text(labels[sel.target.index]))
+        if(plot_range == "1_min"):
+            plt.scatter(x, y, c=value, vmin=min(value), vmax=1, cmap=cm)
+            mplcursors.cursor(hover=True).connect(
+                "add", lambda sel: sel.annotation.set_text(labels[sel.target.index]))
+        elif(plot_range == "max_min"):
+            plt.scatter(x, y, c=value, vmin=min(value), vmax=max(value), cmap=cm)        
+            mplcursors.cursor(hover=True).connect(
+                "add", lambda sel: sel.annotation.set_text(labels[sel.target.index]))
 
         plt.colorbar()
         plt.title(title)
@@ -215,17 +226,17 @@ class DeviceDistribuition():
         plt.show()
         
 
-    def plotQ1Devices(self, title):
-        self.__plotDevices("Q1_PROB", title)
+    def plotQ1Devices(self, title, plot_range):
+        self.__plotDevices("Q1_PROB", title, plot_range)
         
-    def plotH1Devices(self, title):
-        self.__plotDevices("H1_PROB", title)
+    def plotH1Devices(self, title, plot_range):
+        self.__plotDevices("H1_PROB", title, plot_range)
 
-    def plotC1Devices(self, title):
-        self.__plotDevices("C1_PROB", title)
+    def plotC1Devices(self, title, plot_range):
+        self.__plotDevices("C1_PROB", title, plot_range)
 
-    def plotDevicesPower(self, title):
-        self.__plotDevices("POWER", title)
+    def plotDevicesPower(self, title, plot_range):
+        self.__plotDevices("POWER", title, plot_range)
 
     def plotC1Histogram(self, title, hist_type = 'step'):
 
