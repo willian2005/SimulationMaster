@@ -4,7 +4,9 @@ from mathUtils import *
 
 import math
 
-power_dbm_to_mA = [(0, 22), (7, 25), (14, 44), (17, 90), (19, 115), (20, 125)]
+power_dbm_to_mA = [(0, 22), (1, 23), (2, 24), (3, 24), (4, 24), (5, 25), (6, 25),
+                    (7, 25), (8, 25),(9, 26),(10, 31),(11, 32), (12, 34), (13, 35), (14, 44), 
+                    (15, 82), (16, 85), (17, 90), (18, 105), (19, 115), (20, 125)]
 
 current_sleep_mA_semtech = 0.0000001
 current_idle_mA_semtech = current_sleep_mA_semtech

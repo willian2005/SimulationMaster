@@ -135,13 +135,15 @@ def Q1IndividualDevices(devices_to_be_analized, n=2.75):
                         h_d1 = sqrt_0_5*abs(np.random.randn(1) + np.random.randn(1)*j )
                         main_device_distance_to_gateway = devices_to_be_analized.getDeviceDistancesFromGateways(idx)[idx_gw]
                         main_device_path_loss = friisEquation(main_device_distance_to_gateway, n)
-                        main_device_rx_signal = (main_device_path_loss*h_d1**2)
+                        main_device_power = dBm2mW(devices_to_be_analized.getTransmissionPower(idx))
+                        main_device_rx_signal = (main_device_power*main_device_path_loss*h_d1**2)
                         
                         for idx_interferent in interfent_in_tx_list:
                             h_d1 = sqrt_0_5*abs(np.random.randn(1) + np.random.randn(1)*j )
                             interferent_distance_to_gateway = devices_interferents.getDeviceDistancesFromGateways(idx_interferent)[idx_gw]
                             interferent_path_loss = friisEquation(interferent_distance_to_gateway, n)
-                            interferent_rx_signal = (interferent_path_loss*h_d1**2)
+                            interferent_power = dBm2mW(devices_interferents.getTransmissionPower(idx_interferent))
+                            interferent_rx_signal = (interferent_power*interferent_path_loss*h_d1**2)*4
                             if main_device_rx_signal > (interferent_rx_signal):
                                 bool_rx_success = 1
                                 done = 1
