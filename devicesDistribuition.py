@@ -14,7 +14,7 @@ from operator import itemgetter, attrgetter
 #y_central = 12000 
 class DeviceDistribuition():
 
-    def __init__(self, number_of_devices = 0, gateway_possition = None, radius = 0, sf_method = 0, transmission_power = 19, power_method = "STATIC"):
+    def __init__(self, number_of_devices = 0, gateway_possition = None, radius = 0, sf_method = 0, transmission_power = 14, power_method = "STATIC", H1_target=0.9):
         
         self.power_method = power_method
         self.sf_method = sf_method
@@ -29,6 +29,7 @@ class DeviceDistribuition():
         self.gateway_list = gateway_possition
         self.radius = radius
         self.add_devices = 0
+        self.H1_target = H1_target
         
     def __del__(self):
         del self.number_of_devices
@@ -84,7 +85,7 @@ class DeviceDistribuition():
         
         for idx in range(self.number_of_devices -1):
             priority_device = distance_from_closer_gateway[idx][0]
-            sf = getSF(min(self.getDeviceDistancesFromGateways(priority_device)), self.radius, self.sf_method, self.number_of_devices)    
+            sf = getSF(min(self.getDeviceDistancesFromGateways(priority_device)), self.radius, self.sf_method, self.number_of_devices, self.H1_target, self.getTransmissionPower(idx))    
             self.sf_list[priority_device] = sf
 
     def __setPowerDevice(self):

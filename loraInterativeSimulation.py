@@ -12,7 +12,7 @@ import multiprocessing
 from multiprocessing import Process, Queue
 
 REPTION_TIMES = 10000
-REPTION_TIMES_PER_INTERACTION_Q1_SIM = 1000
+REPTION_TIMES_PER_INTERACTION_Q1_SIM = 500 
 REPTION_TIMES_CYCLES = 1000
 
 

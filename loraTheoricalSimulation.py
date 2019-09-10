@@ -3,7 +3,7 @@ from mpmath import *
 import numpy as np
 from random import randint
 
-from loraSpecific import *
+from loraUtils import SNR_qsf_linear
 from mathUtils import *
 from linkBudget import friisEquation
 

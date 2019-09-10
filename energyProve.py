@@ -161,13 +161,13 @@ def Q1ShiftedGateway(max_distance = 12000, gateway= [(12000,12000)], number_of_d
         q1sm[a[0]] = a[1]
     
     return q1sm, distances
-def simulateC1MultiplesGateway(gateways, number_of_devices, radius, save_data, sf_method, device_power, power_method):
+def simulateC1MultiplesGateway(gateways, number_of_devices, radius, save_data, sf_method, device_power, power_method, h1_target):
 
-    devices_to_be_analized = DeviceDistribuition(number_of_devices, gateways, radius, sf_method, device_power, power_method)
+    devices_to_be_analized = DeviceDistribuition(number_of_devices, gateways, radius, sf_method, device_power, power_method, h1_target)
 
     devices_to_be_analized.averageDevicesDistribuition()
     devices_to_be_analized.plotDevices("Device Distribuition")
-    devices_to_be_analized.plotDevicesPower("Device Power", "max_min")
+    devices_to_be_analized.plotDevicesPower("Power of devices", "max_min")
     print(devices_to_be_analized.getDeviceInEachSF())
     
     Q1IndividualDevices(devices_to_be_analized)
@@ -206,11 +206,15 @@ def plotEnergyConsumption(distribuition_object_path, payload_size, package_per_d
     average_power_per_sf = list(map(truediv, sum_power_per_sf, device_distribuition.getDeviceInEachSF()))
     average_life_time_per_sf = list(map(truediv, sum_life_time_per_sf, device_distribuition.getDeviceInEachSF()))
 
-    print("Package - Average power per SF\n", average_power_per_sf)
-    print("Package - Sum power per SF\n", sum_power_per_sf)
-    print("Package - Average networt power \n", average_network_power)
-    print("Package - Sum networt power \n", sum_network_power)
-    print("Life time per SF\n", average_life_time_per_sf)
+    average_power_per_sf_formated = ['%.3f'%elem for elem in average_power_per_sf]
+    average_life_time_per_sf_formated = ['%.3f' % elem for elem in average_life_time_per_sf]
+    sum_power_per_sf_formated = ['%.3f' % elem for elem in sum_power_per_sf]
+
+    print("Package - Average power per SF\n", average_power_per_sf_formated)
+    print("Package - Sum power per SF (1 package per device)\n", sum_power_per_sf_formated)
+    print("Package - Average network power \n%.3f"% average_network_power)
+    print("Package - Sum network power (1 package per device)\n%.3f"% sum_network_power)
+    print("Life time per SF\n", average_life_time_per_sf_formated)
 
 def plotDeviceDistribuition(distribuition_object_path, plot_range_method):
 
@@ -350,18 +354,30 @@ if __name__== "__main__":
     parser.add_option('--device_power_variable',
         action="store", dest="device_power_variable",
         help="Set the power of the device, if not set the default is 19dBm. The options are: power_fullrange and power_lora_range.\
-        Power fullrange try to set the H1 to 0.9, to do it, change the power of device with analog values. \
-        Lora range, try to set the H1 to 0.9, set the power of the device in values possible by LoRa.", 
+        Power fullrange try to set the H1 to --h1_target (default = 0.9), to do it, change the power of device with analog values. \
+        Lora range, try to set the H1 to --h1_target (default = 0.9), set the power of the device in values possible by LoRa.", 
         default=False)
+
+    parser.add_option('--h1_target',
+        action="store", dest="h1_target",
+        help="Set the power of the device to reach the H1 in the value set", 
+        default=0.9)
+
+    parser.add_option('--h1_mult_gateway_diversity',
+        action="store", dest="h1_mult_gateway_diversity",
+        help="Set the power of the device to reach the H1 in the value set", 
+        default=false)
 
     parser.add_option('--plot_range',
         action="store", dest="plot_range",
         help="Define the way that the range of plots should be showed, options: 1_min, max_min\
         Should be used with --plot.",
         default="1_min")
+
+
     
     options, args = parser.parse_args()
-
+    
     if(options.simulate == True):
         print("Init the simulation with the parameters")
 
@@ -378,8 +394,14 @@ if __name__== "__main__":
                 exit(-1)
         else:
             power_method = "STATIC"
-            device_power = 19
-
+            device_power = 14 
+        
+        if( float(options.h1_target) > 0 and float(options.h1_target) < 1):
+                h1_target = float(options.h1_target)
+        else:
+            print("H1_target is out of acceptable range.")
+            exit(-1)
+            
         if(options.gateways != False):
             string_gateways = options.gateways
             gateways = []
@@ -417,7 +439,7 @@ if __name__== "__main__":
             print("The gateways is out of circle")
             exit(-1)
 
-        simulateC1MultiplesGateway(gateways, number_of_devices, radius_size, options.save_object_device_distribuition, options.sf_method, device_power, power_method)
+        simulateC1MultiplesGateway(gateways, number_of_devices, radius_size, options.save_object_device_distribuition, options.sf_method, device_power, power_method, h1_target)
 
     elif(options.plot == True ):
 
