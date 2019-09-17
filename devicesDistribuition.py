@@ -14,7 +14,7 @@ from operator import itemgetter, attrgetter
 #y_central = 12000 
 class DeviceDistribuition():
 
-    def __init__(self, number_of_devices = 0, gateway_possition = None, radius = 0, sf_method = 0, transmission_power = 14, power_method = "STATIC", H1_target=0.9):
+    def __init__(self, number_of_devices = 0, gateway_possition = None, radius = 0, sf_method = 0, transmission_power = 14, power_method = "STATIC", H1_target=0.9, h1_mult_gateway_diversity = False):
         
         self.power_method = power_method
         self.sf_method = sf_method
@@ -30,6 +30,7 @@ class DeviceDistribuition():
         self.radius = radius
         self.add_devices = 0
         self.H1_target = H1_target
+        self.h1_mult_gateway_diversity = h1_mult_gateway_diversity
         
     def __del__(self):
         del self.number_of_devices
@@ -85,16 +86,29 @@ class DeviceDistribuition():
         
         for idx in range(self.number_of_devices -1):
             priority_device = distance_from_closer_gateway[idx][0]
-            sf = getSF(min(self.getDeviceDistancesFromGateways(priority_device)), self.radius, self.sf_method, self.number_of_devices, self.H1_target, self.getTransmissionPower(idx))    
+            sf = getSF(min(self.getDeviceDistancesFromGateways(priority_device)), self.radius, self.sf_method, self.number_of_devices, self.H1_target, self.getTransmissionPower(idx))
+            """
+            if self.h1_mult_gateway_diversity == True:
+                sf = getSF(self.getDeviceDistancesFromGateways(idx), self.radius, self.sf_method, self.number_of_devices, self.H1_target, self.getTransmissionPower(idx), self.h1_mult_gateway_diversity)
+            else:
+                sf = getSF(min(self.getDeviceDistancesFromGateways(priority_device)), self.radius, self.sf_method, self.number_of_devices, self.H1_target, self.getTransmissionPower(idx))    
+            """
             self.sf_list[priority_device] = sf
 
     def __setPowerDevice(self):
 
+        
         if self.power_method == "FULL_RANGE" or self.power_method == "LORA_RANGE":
             
-            H1_target = 0.9
+            H1_target = self.H1_target
             for idx in range(self.number_of_devices -1):
-                power = P1TheoricalFromH1(H1_target, self.getSFNumber(idx), min(self.getDeviceDistancesFromGateways(idx)))
+
+                if self.h1_mult_gateway_diversity == True:
+                    power = P1TheoricalFromH1MultGatewayDiversity(H1_target, self.getSFNumber(idx), self.getDeviceDistancesFromGateways(idx))
+                else:
+                    power = P1TheoricalFromH1(H1_target, self.getSFNumber(idx), min(self.getDeviceDistancesFromGateways(idx)))
+    
+
                 if self.power_method == "LORA_RANGE":
                     power = math.ceil(power)
                     if power < 2:
@@ -103,6 +117,7 @@ class DeviceDistribuition():
                         power = 20
                 self.setTransmissionPower(idx, power)
         
+        return 0
                 
     def updateC1Probability(self):
         

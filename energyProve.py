@@ -161,9 +161,9 @@ def Q1ShiftedGateway(max_distance = 12000, gateway= [(12000,12000)], number_of_d
         q1sm[a[0]] = a[1]
     
     return q1sm, distances
-def simulateC1MultiplesGateway(gateways, number_of_devices, radius, save_data, sf_method, device_power, power_method, h1_target):
+def simulateC1MultiplesGateway(gateways, number_of_devices, radius, save_data, sf_method, device_power, power_method, h1_target, h1_mult_gateway_diversity):
 
-    devices_to_be_analized = DeviceDistribuition(number_of_devices, gateways, radius, sf_method, device_power, power_method, h1_target)
+    devices_to_be_analized = DeviceDistribuition(number_of_devices, gateways, radius, sf_method, device_power, power_method, h1_target, h1_mult_gateway_diversity)
 
     devices_to_be_analized.averageDevicesDistribuition()
     devices_to_be_analized.plotDevices("Device Distribuition")
@@ -364,9 +364,9 @@ if __name__== "__main__":
         default=0.9)
 
     parser.add_option('--h1_mult_gateway_diversity',
-        action="store", dest="h1_mult_gateway_diversity",
+        action="store_true", dest="h1_mult_gateway_diversity",
         help="Set the power of the device to reach the H1 in the value set", 
-        default=false)
+        default=False)
 
     parser.add_option('--plot_range',
         action="store", dest="plot_range",
@@ -379,6 +379,9 @@ if __name__== "__main__":
     options, args = parser.parse_args()
     
     if(options.simulate == True):
+
+        h1_mult_gateway_diversity = options.h1_mult_gateway_diversity
+
         print("Init the simulation with the parameters")
 
         if(options.device_power_variable != False):
@@ -386,8 +389,10 @@ if __name__== "__main__":
             device_power = 0
             if options.device_power_variable == "power_fullrange":
                 power_method = "FULL_RANGE"
+                device_power = 100
             elif options.device_power_variable == "power_lora_range":
                 power_method = "LORA_RANGE"
+                device_power = 14 
             else:
                 print("Power method is unknow, the options are: --device_power_variable=\"power_fullrange\" \
                 and --device_power_variable=\"power_lora_range\"")
@@ -439,7 +444,7 @@ if __name__== "__main__":
             print("The gateways is out of circle")
             exit(-1)
 
-        simulateC1MultiplesGateway(gateways, number_of_devices, radius_size, options.save_object_device_distribuition, options.sf_method, device_power, power_method, h1_target)
+        simulateC1MultiplesGateway(gateways, number_of_devices, radius_size, options.save_object_device_distribuition, options.sf_method, device_power, power_method, h1_target, h1_mult_gateway_diversity)
 
     elif(options.plot == True ):
 
