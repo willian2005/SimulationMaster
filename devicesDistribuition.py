@@ -25,6 +25,7 @@ class DeviceDistribuition():
         self.q1_probability = [0]*number_of_devices
         self.h1_probability = [0]*number_of_devices
         self.c1_probability = [0]*number_of_devices
+        self.max_transmission_power_dbm = transmission_power
         self.transmission_power_dbm = [transmission_power]*number_of_devices
         self.gateway_list = gateway_possition
         self.radius = radius
@@ -113,8 +114,8 @@ class DeviceDistribuition():
                     power = math.ceil(power)
                     if power < 2:
                         power = 2
-                    elif power > 20:
-                        power = 20
+                    elif power > self.max_transmission_power_dbm:
+                        power = self.max_transmission_power_dbm
                 self.setTransmissionPower(idx, power)
         
         return 0
