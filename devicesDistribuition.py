@@ -87,13 +87,13 @@ class DeviceDistribuition():
         
         for idx in range(self.number_of_devices -1):
             priority_device = distance_from_closer_gateway[idx][0]
-            sf = getSF(min(self.getDeviceDistancesFromGateways(priority_device)), self.radius, self.sf_method, self.number_of_devices, self.H1_target, self.getTransmissionPower(idx))
-            """
+            #sf = getSF(min(self.getDeviceDistancesFromGateways(priority_device)), self.radius, self.sf_method, self.number_of_devices, self.H1_target, self.getTransmissionPower(idx))
+            
             if self.h1_mult_gateway_diversity == True:
-                sf = getSF(self.getDeviceDistancesFromGateways(idx), self.radius, self.sf_method, self.number_of_devices, self.H1_target, self.getTransmissionPower(idx), self.h1_mult_gateway_diversity)
+                sf = getSF(self.getDeviceDistancesFromGateways(priority_device), self.radius, self.sf_method, self.number_of_devices, self.H1_target, self.getTransmissionPower(idx), self.h1_mult_gateway_diversity)
             else:
                 sf = getSF(min(self.getDeviceDistancesFromGateways(priority_device)), self.radius, self.sf_method, self.number_of_devices, self.H1_target, self.getTransmissionPower(idx))    
-            """
+            
             self.sf_list[priority_device] = sf
 
     def __setPowerDevice(self):
