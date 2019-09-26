@@ -210,11 +210,11 @@ def plotEnergyConsumption(distribuition_object_path, payload_size, package_per_d
     average_life_time_per_sf_formated = ['%.3f' % elem for elem in average_life_time_per_sf]
     sum_power_per_sf_formated = ['%.3f' % elem for elem in sum_power_per_sf]
 
-    print("Package - Average power per SF\n", average_power_per_sf_formated)
-    print("Package - Sum power per SF (1 package per device)\n", sum_power_per_sf_formated)
-    print("Package - Average network power \n%.3f"% average_network_power)
-    print("Package - Sum network power (1 package per device)\n%.3f"% sum_network_power)
-    print("Life time per SF\n", average_life_time_per_sf_formated)
+    print("Package - Average power per SF - mJ\n", average_power_per_sf_formated)
+    print("Package - Sum power per SF (1 package per device) - mJ\n", sum_power_per_sf_formated)
+    print("Package - Average network power \n%.3f mJ"% average_network_power)
+    print("Package - Sum network power (1 package per device)\n%.3f mJ"% sum_network_power)
+    print("Life time per SF (days)\n", average_life_time_per_sf_formated)
 
 def plotDeviceDistribuition(distribuition_object_path, plot_range_method):
 
@@ -228,6 +228,7 @@ def plotDeviceDistribuition(distribuition_object_path, plot_range_method):
     device_distribuition.plotC1Devices("DER C1 distribuition", plot_range_method)
 
     device_distribuition.plotC1Histogram("DER Histogram")
+    print("Average DER %f" % device_distribuition.averageC1DER())
 
 def Q1TheoricalSimulatedHaza():
     

@@ -124,7 +124,15 @@ class DeviceDistribuition():
         
         for idx in range(self.number_of_devices -1):
             self.c1_probability[idx] = self.q1_probability[idx]*self.h1_probability[idx]
+    
+    def averageC1DER(self):
+        
+        sum = 0
+        for idx in range(self.number_of_devices -1):
+            sum = sum + self.c1_probability[idx]
 
+        return sum/(self.number_of_devices -1)    
+    
     def getC1Probability(self, index):
         return self.c1_probability[index]
 
