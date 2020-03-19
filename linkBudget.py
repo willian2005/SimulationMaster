@@ -1,7 +1,7 @@
 # -174 + 10*log10(125000) +(6) +(-15)
 import math
 
-def friisEquation(distance, n =2.75, fc = 868e6):
+def friisEquation(distance, n=2.75, fc = 868e6):
     """
     Parameters
         distance: the distance in meters

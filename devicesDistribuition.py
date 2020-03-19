@@ -16,6 +16,7 @@ class DeviceDistribuition():
 
     def __init__(self, number_of_devices = 0, gateway_possition = None, radius = 0, sf_method = 0, transmission_power = 14, power_method = "STATIC", H1_target=0.9, h1_mult_gateway_diversity = False):
         
+        self.n = 2.75
         self.power_method = power_method
         self.sf_method = sf_method
         self.number_of_devices = number_of_devices
@@ -79,23 +80,37 @@ class DeviceDistribuition():
     def __setSf(self):
 
         distance_from_closer_gateway = []
+
         for idx in range(self.number_of_devices -1):
-            
+            if(min(self.getDeviceDistancesFromGateways(idx)) ) < 100:          
+                self.coordenate_list[idx] = [self.coordenate_list[idx][0] + 200 , self.coordenate_list[idx][1] + 200]
+
+        self.__setGatewayDistance()
+
+        for idx in range(self.number_of_devices -1):
+
             distance_from_closer_gateway.append((idx, min(self.getDeviceDistancesFromGateways(idx)))) 
         #ordem the devices from the closer gateway    
         distance_from_closer_gateway = sorted(distance_from_closer_gateway, key=itemgetter(1))
-        
+        print(len(self.gateway_list))
         for idx in range(self.number_of_devices -1):
             priority_device = distance_from_closer_gateway[idx][0]
-            #sf = getSF(min(self.getDeviceDistancesFromGateways(priority_device)), self.radius, self.sf_method, self.number_of_devices, self.H1_target, self.getTransmissionPower(idx))
+            #   sf = getSF(min(self.getDeviceDistancesFromGateways(priority_device)), self.radius, self.sf_method, self.number_of_devices, self.H1_target, self.getTransmissionPower(idx))
             
             if self.h1_mult_gateway_diversity == True:
-                sf = getSF(self.getDeviceDistancesFromGateways(priority_device), self.radius, self.sf_method, self.number_of_devices, self.H1_target, self.getTransmissionPower(idx), self.h1_mult_gateway_diversity)
+                sf = getSF(self.getDeviceDistancesFromGateways(priority_device), self.radius, self.sf_method, self.number_of_devices, self.n, self.H1_target, self.getTransmissionPower(idx), self.h1_mult_gateway_diversity, number_of_gateways=len(self.gateway_list))
             else:
-                sf = getSF(min(self.getDeviceDistancesFromGateways(priority_device)), self.radius, self.sf_method, self.number_of_devices, self.H1_target, self.getTransmissionPower(idx))    
+                sf = getSF(min(self.getDeviceDistancesFromGateways(priority_device)), self.radius, self.sf_method, self.number_of_devices, self.n, self.H1_target, self.getTransmissionPower(idx), number_of_gateways=len(self.gateway_list))    
             
             self.sf_list[priority_device] = sf
+    
+    def __setAllDevicesInSf(self, sf):
+        
+        sfs = ["SF7", "SF8", "SF9", "SF10", "SF11", "SF12"]
 
+        for idx in range(self.number_of_devices -1):    
+            self.sf_list[idx] = [sfs[sf-7], sf]
+            
     def __setPowerDevice(self):
 
         
@@ -105,9 +120,9 @@ class DeviceDistribuition():
             for idx in range(self.number_of_devices -1):
 
                 if self.h1_mult_gateway_diversity == True:
-                    power = P1TheoricalFromH1MultGatewayDiversity(H1_target, self.getSFNumber(idx), self.getDeviceDistancesFromGateways(idx))
+                    power = P1TheoricalFromH1MultGatewayDiversity(H1_target, self.getSFNumber(idx), self.getDeviceDistancesFromGateways(idx), self.n)
                 else:
-                    power = P1TheoricalFromH1(H1_target, self.getSFNumber(idx), min(self.getDeviceDistancesFromGateways(idx)))
+                    power = P1TheoricalFromH1(H1_target, self.getSFNumber(idx), min(self.getDeviceDistancesFromGateways(idx)), self.n)
     
 
                 if self.power_method == "LORA_RANGE":
@@ -133,6 +148,35 @@ class DeviceDistribuition():
 
         return sum/(self.number_of_devices -1)    
     
+    def __div0Handler(self, a, b):
+            try: 
+                return a/b 
+            except ZeroDivisionError: 
+                return 0
+
+
+    def getAverageBySF(self, parameter):
+
+        sumBySF = [0,0,0,0,0,0]
+
+        for idx in range(self.number_of_devices -1):    
+            sf_idx =  self.getSFNumber(idx) - 7
+            sumBySF[sf_idx] = sumBySF[sf_idx] + parameter(idx)
+
+        return [float(f"%.3f"%self.__div0Handler(a, b)) for a, b in zip(sumBySF, self.getDeviceInEachSF())]
+    
+    def getQ1AverageBySF(self):
+
+        return self.getAverageBySF(self.getQ1Probability)
+
+    def getH1AverageBySF(self):
+
+        return self.getAverageBySF(self.getH1Probability)
+
+    def getTransmissionPowerAverageBySF(self):
+
+        return self.getAverageBySF(self.getTransmissionPower)
+
     def getC1Probability(self, index):
         return self.c1_probability[index]
 
@@ -181,7 +225,7 @@ class DeviceDistribuition():
     
     def getNumberOfDevices(self):
         return self.number_of_devices
-        
+
     def getDeviceInEachSF(self):
         SF_list = ["SF7", "SF8", "SF9", "SF10", "SF11", "SF12"]
         SFs = []
@@ -247,7 +291,7 @@ class DeviceDistribuition():
 
         plt.colorbar()
         plt.title(title)
-        plt.savefig(str(title+code))
+        plt.savefig(str(title+code+".eps"), format='eps')
         plt.show()
         
 
@@ -304,7 +348,7 @@ class DeviceDistribuition():
         
         plt.title(title)
         plt.legend(loc='upper right')
-        plt.savefig(str(title+"C1_histogram"))
+        plt.savefig(str(title+"C1_histogram.eps"), format='eps')
         plt.show()
 
     def plotDevices(self, title):
@@ -341,7 +385,7 @@ class DeviceDistribuition():
 
         plt.legend(loc='upper right')
         plt.title(title)
-        plt.savefig(str("Device_distribuition"))
+        plt.savefig(str("Device_distribuition.eps"), format='eps')
         plt.show()
 
     def averageDevicesDistribuition(self):
@@ -364,6 +408,34 @@ class DeviceDistribuition():
         self.__setGatewayDistance()
         self.__setSf()
         self.__setPowerDevice()
+
+
+    def specificySFDevicesDistribuition(self, sf):
+
+        number_of_steps = 30
+        total_area = math.pi*((self.radius)**2)
+        step = int((self.radius)/number_of_steps)
+        devices_per_circle = []
+        for i in range(0, int(self.radius), step):
+            internal_circle = math.pi*(i**2)
+            external_circle = math.pi*((i+step)**2)
+            circular_area = external_circle - internal_circle
+            number_of_devices_per_circle = math.ceil((circular_area/total_area)*(self.number_of_devices - 1))
+            if(number_of_devices_per_circle + self.add_devices >= self.number_of_devices):
+                number_of_devices_per_circle = (self.number_of_devices - self.add_devices) - 1
+            devices_per_circle.append(number_of_devices_per_circle)
+            self.__deviceDistribuition(number_of_devices_per_circle, i+1, i+step)
+            print("internal circle: %d, external: %d"%(i+1, step))
+
+        self.__setGatewayDistance()
+        self.__setAllDevicesInSf(sf)
+        self.__setPowerDevice()
+
+
+
+
+
+
     """
     def randomDevicesDistribuition(self, number_of_devices, gateways):
 

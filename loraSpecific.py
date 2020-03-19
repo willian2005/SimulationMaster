@@ -16,7 +16,7 @@ sfs = ["SF7", "SF8", "SF9", "SF10", "SF11", "SF12"]
 #last_distance_80_percent_DER_H1_per_sf = [2271, 2926, 3825, 4917, 6059, 7516]
 
 devices_in_each_sf = [0]*6
-def getSF(distance, max_radius, method , number_of_devices, h1_target = 0.9, power = 14, h1_mult_gateway_diversity = False):
+def getSF(distance, max_radius, method , number_of_devices, n, h1_target = 0.9, power = 14, h1_mult_gateway_diversity = False, number_of_gateways = 1):
 
     sf = "SF0"
     int_sf = 0
@@ -25,19 +25,27 @@ def getSF(distance, max_radius, method , number_of_devices, h1_target = 0.9, pow
         sf_base = int(distance/(max_radius/6))
         sf = sfs[sf_base if sf_base<6 else 5]
         int_sf = sf_base + 7
-    elif method == "SAME_TIME_ON_AIR":
 
+
+    elif method == "SAME_TIME_ON_AIR" or method == "SAME_TIME_ON_AIR_BY_GATEWAY" or method == "JUST_POWER_ADR":
         sf = "SF12"
         int_sf = 12
         sum_total_time = sum(time_on_air_in_reference_sf7_list)
         for sf_base in range(6):
             #is number total of SF 
             sf_device_time_on_air = round(number_of_devices*(time_on_air_in_reference_sf7_list[sf_base]/sum_total_time))
+            
+            if method == "SAME_TIME_ON_AIR_BY_GATEWAY":
+                sf_device_time_on_air = sf_device_time_on_air*number_of_gateways
+            
+            if method == "JUST_POWER_ADR":
+                sf_device_time_on_air = sf_device_time_on_air*99999
+
             if devices_in_each_sf[sf_base] < sf_device_time_on_air:
                 if h1_mult_gateway_diversity == True:
-                    power_from_h1 = P1TheoricalFromH1MultGatewayDiversity(h1_target, (sf_base+7), distance)
+                    power_from_h1 = P1TheoricalFromH1MultGatewayDiversity(h1_target, (sf_base+7), distance, n)
                 else:
-                    power_from_h1 = P1TheoricalFromH1(h1_target, (sf_base+7), distance)
+                    power_from_h1 = P1TheoricalFromH1(h1_target, (sf_base+7), distance, n)
 
                 if  power_from_h1 <= power:
                     devices_in_each_sf[sf_base] = devices_in_each_sf[sf_base] + 1

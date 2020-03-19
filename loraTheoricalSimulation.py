@@ -43,29 +43,11 @@ def P1TheoricalFromH1MultGatewayDiversity(H1, sf, distance, n=2.75):
             print("P1_dbm: %f - sf: %d, H1: %f"%(P1_dbm, sf, H1))
             break
 
-    """
-    This is a aproximate and dont work well
-    num_of_gateways = len(distance)
-    path_loss_product = 1
 
-    for i in range(num_of_gateways):
-        path_loss_product = friisEquation(distance[i])*path_loss_product
-        print(friisEquation(distance[i]))
-    
-    P1_linear = -((SNR_qsf_linear(sf)*varianceWhiteNoise())**num_of_gateways)/(path_loss_product*(H1 - 1))
-    
-    P1_linear = pow(P1_linear, (1.0/num_of_gateways))
-
-    P1_dbm = mW2dBm(P1_linear*1000)
-    
-    print("P1_dbm: %f - sf: %d"%(P1_dbm, sf))
-    print(distance)
-    #if P1_dbm > P1TheoricalFromH1(H1, sf, min(distance)):
-    #    P1_dbm = P1TheoricalFromH1(H1, sf, min(distance))
-    """
     return P1_dbm
 
-def P1TheoricalFromH1(H1, sf, distance, n=2.75):
+def P1TheoricalFromH1(H1, sf, distance, n):
+
 
     P1_linear = -(varianceWhiteNoise()*SNR_qsf_linear(sf))/(friisEquation(distance, n=n)*math.log(H1)) 
     P1_dbm = mW2dBm(P1_linear*1000)

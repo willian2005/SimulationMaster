@@ -1,4 +1,4 @@
-#! /usr/bin/python3
+#!/usr/bin/python3
 import sys
 sys.path.append("..")
 sys.path.append("output_data/")
@@ -20,7 +20,7 @@ calc_semtech_power_mw = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 1
 calc_semtech_power_dbm = [22, 23, 24, 24, 24, 25, 25, 25, 25, 26, 31, 32, 34, 35, 44, 82, 85, 90, 105, 115, 125]
 
 
-sleep_power_in_ma = 0.001*voltage_supply # 1uA
+sleep_power_in_ma = current_sleep_mA_paper*voltage_supply # 1uA
 
 def csvSaveData(gateway_possition, distance, h1sm, q1sm, c1t):
 
@@ -36,7 +36,7 @@ def csvSaveData(gateway_possition, distance, h1sm, q1sm, c1t):
     line = "c1t_gx_" + str(gateway_possition[0]) + "_gy_" + str(gateway_possition[1]) + " = " + str(c1t) + "\n" 
     file.write(line)
 
-def plotCalcSemtechPower_mA_by_dbm():
+def plotCalcSemtechPower():
     plt.plot(calc_semtech_power_mw, calc_semtech_power_dbm)
     plt.xlabel('power in mA')
     plt.ylabel('power in dBm')
@@ -161,6 +161,21 @@ def Q1ShiftedGateway(max_distance = 12000, gateway= [(12000,12000)], number_of_d
         q1sm[a[0]] = a[1]
     
     return q1sm, distances
+
+def simulateQ1SingleGateway(number_of_devices, sf, radius, save_data):
+
+    devices_to_be_analized = DeviceDistribuition(number_of_devices, gateway_possition=[[radius, radius]], radius = radius)
+
+    devices_to_be_analized.specificySFDevicesDistribuition(sf)
+    devices_to_be_analized.plotDevices("Device Distribuition")
+
+    print(devices_to_be_analized.getDeviceInEachSF())
+    
+    Q1IndividualDevices(devices_to_be_analized)
+
+    devices_to_be_analized.saveObjectData(save_data)
+
+
 def simulateC1MultiplesGateway(gateways, number_of_devices, radius, save_data, sf_method, device_power, power_method, h1_target, h1_mult_gateway_diversity):
 
     devices_to_be_analized = DeviceDistribuition(number_of_devices, gateways, radius, sf_method, device_power, power_method, h1_target, h1_mult_gateway_diversity)
@@ -170,15 +185,33 @@ def simulateC1MultiplesGateway(gateways, number_of_devices, radius, save_data, s
     devices_to_be_analized.plotDevicesPower("Power of devices", "max_min")
     print(devices_to_be_analized.getDeviceInEachSF())
     
-    Q1IndividualDevices(devices_to_be_analized)
-    H1IndividualDevices(devices_to_be_analized)
+    Q1IndividualDevices(devices_to_be_analized, n=2.75)
+    H1IndividualDevices(devices_to_be_analized, n=2.75)
     devices_to_be_analized.updateC1Probability()
 
     devices_to_be_analized.saveObjectData(save_data)
 
-def plotEnergyConsumption(distribuition_object_path, payload_size, package_per_day, battery, tx_mode):
+def fairnessCoeficient(distribuition_object_path):
 
     device_distribuition = DeviceDistribuition()
+    device_distribuition.loadObjectData(distribuition_object_path)
+
+    dist_size = device_distribuition.getNumberOfDevices() - 1
+    print(f"Size of Device distribuition: { dist_size}")
+    
+    numerator = 0
+    denominator = 0
+    for i in range(dist_size):
+        numerator = numerator + device_distribuition.getC1Probability(i)
+        denominator = denominator + (device_distribuition.getC1Probability(i)**2)
+        #numerator = numerator + 0.5
+        #denominator = denominator + (0.5**2)
+
+    cJain = (numerator**2) / (dist_size*denominator)
+    print(f"The coeficient Jain is: {cJain}")
+
+def plotEnergyConsumption(distribuition_object_path, payload_size, package_per_day, battery, tx_mode):
+
     #calcule
     # - Average power in each SF
     # - Average power of all devices in network
@@ -193,7 +226,7 @@ def plotEnergyConsumption(distribuition_object_path, payload_size, package_per_d
         
     for i in range(sum(device_distribuition.getDeviceInEachSF())):
         toa = get_toa(payload_size, device_distribuition.getSFNumber(i))['t_packet']
-        power_per_package = packageWorkCalculator(toa, device_distribuition.getTransmissionPower(i))
+        power_per_package = packageWorkCalculator(toa, device_distribuition.getTransmissionPower(i), tx_mode)
         life_time_device, one_day_work = batteryTimeOfLife(battery, package_per_day, toa, device_distribuition.getTransmissionPower(i), tx_mode)
 #        print("SF %d, one_day_work %f"%(device_distribuition.getSFNumber(i), one_day_work))
         sum_network_power = sum_network_power+power_per_package
@@ -203,29 +236,53 @@ def plotEnergyConsumption(distribuition_object_path, payload_size, package_per_d
         sum_life_time_per_sf[sf_base] = sum_life_time_per_sf[sf_base] + life_time_device
 
     average_network_power = sum_network_power/sum(device_distribuition.getDeviceInEachSF())
-    average_power_per_sf = list(map(truediv, sum_power_per_sf, device_distribuition.getDeviceInEachSF()))
-    average_life_time_per_sf = list(map(truediv, sum_life_time_per_sf, device_distribuition.getDeviceInEachSF()))
+    #average_power_per_sf = list(map(truediv, sum_power_per_sf, device_distribuition.getDeviceInEachSF()))
+    average_power_per_sf = 1
+    #average_life_time_per_sf = list(map(truediv, sum_life_time_per_sf, device_distribuition.getDeviceInEachSF()))
+    average_life_time_per_sf = 1
 
-    average_power_per_sf_formated = ['%.3f'%elem for elem in average_power_per_sf]
-    average_life_time_per_sf_formated = ['%.3f' % elem for elem in average_life_time_per_sf]
-    sum_power_per_sf_formated = ['%.3f' % elem for elem in sum_power_per_sf]
+    #average_power_per_sf_formated = ['%.3f'%elem for elem in average_power_per_sf]
+    #average_life_time_per_sf_formated = ['%.3f' % elem for elem in average_life_time_per_sf]
+    #sum_power_per_sf_formated = ['%.3f' % elem for elem in sum_power_per_sf]
 
-    print("Package - Average power per SF - mJ\n", average_power_per_sf_formated)
-    print("Package - Sum power per SF (1 package per device) - mJ\n", sum_power_per_sf_formated)
+    #print("Package - Average power per SF - mJ\n", average_power_per_sf_formated)
+    #print("Package - Sum power per SF (1 package per device) - mJ\n", sum_power_per_sf_formated)
     print("Package - Average network power \n%.3f mJ"% average_network_power)
-    print("Package - Sum network power (1 package per device)\n%.3f mJ"% sum_network_power)
-    print("Life time per SF (days)\n", average_life_time_per_sf_formated)
+    #print("Package - Sum network power (1 package per device)\n%.3f mJ"% sum_network_power)
+    #print("Life time per SF (days)\n", average_life_time_per_sf_formated)
+    print("SF_Method %s "% device_distribuition.sf_method)
+    print("Diversity %d "% device_distribuition.h1_mult_gateway_diversity)
+    print("H1_target %f "% device_distribuition.H1_target)
+    
 
 def plotDeviceDistribuition(distribuition_object_path, plot_range_method):
 
     device_distribuition = DeviceDistribuition()
     device_distribuition.loadObjectData(distribuition_object_path)
+
+
+    sum_vec = []
+    for idx in device_distribuition.getDevicesSameSF(12):
+        distances = device_distribuition.getDeviceDistancesFromGateways(idx)
+        sum = 0
+        for dist in distances:
+            if dist < 4000:
+                sum = sum + 1
+        sum_vec.append(sum)
+
+    #device_distribuition.getDeviceDistancesFromGateways()
+
+
+
     print(device_distribuition.getDeviceInEachSF())
-    device_distribuition.plotDevices("Device Distribuition")
-    device_distribuition.plotDevicesPower("Power of devices", plot_range_method)
-    device_distribuition.plotH1Devices("DER H1 distribuition", plot_range_method)
-    device_distribuition.plotQ1Devices("DER Q1 distribuition", plot_range_method)
-    device_distribuition.plotC1Devices("DER C1 distribuition", plot_range_method)
+    device_distribuition.plotDevices("Distribuição dos nós")
+    print(f"Q1 average {device_distribuition.getQ1AverageBySF()}")
+    print(f"H1 average {device_distribuition.getH1AverageBySF()}")
+    print(f"Transmission Power average {device_distribuition.getTransmissionPowerAverageBySF()}")
+    device_distribuition.plotDevicesPower("Potência dos nós", plot_range_method)
+    device_distribuition.plotH1Devices("Distribuição H1", plot_range_method)
+    device_distribuition.plotQ1Devices("Distribuição Q1", plot_range_method)
+    device_distribuition.plotC1Devices("Distribuição C1", plot_range_method)
 
     device_distribuition.plotC1Histogram("DER Histogram")
     print("Average DER %f" % device_distribuition.averageC1DER())
@@ -301,6 +358,12 @@ if __name__== "__main__":
         help="Calculate the energy used by each group of SF devices, should be used with --plot", 
         default=False)
 
+    parser.add_option('--simulate_q1_only',
+        action="store_true", dest="simulate_q1_only",
+        help="-----------", 
+        default=False)
+
+
     parser.add_option('--package_per_day',
         action="store", dest="package_per_day",
         help="Is the number of package sended by the day, the default is 100, should be used with --energy_consumption", 
@@ -314,7 +377,7 @@ if __name__== "__main__":
     parser.add_option('--tx_mode',
         action="store", dest="tx_mode",
         help="Is the number of rx windows in receive data, could be \"tx\", \"tx_rx\", \"tx_rx_rx\", the default is \"tx\", used to calculate the life time of device, should be used with --energy_consumption", 
-        default="tx")
+        default="tx_rx")
 
     parser.add_option('--payload_size',
         action="store", dest="payload_size",
@@ -324,7 +387,7 @@ if __name__== "__main__":
 
     parser.add_option('--sf_method',
         action="store", dest="sf_method",
-        help="Method used to set the SFs, could be: \"RADIAL\", \"SAME_TIME_ON_AIR\"", 
+        help="Method used to set the SFs, could be: \"RADIAL\", \"SAME_TIME_ON_AIR\", \"JUST_POWER_ADR\"\"SAME_TIME_ON_AIR_BY_GATEWAY\"", 
         default="RADIAL")
 
     parser.add_option('--number_of_devices',
@@ -374,11 +437,21 @@ if __name__== "__main__":
         help="Define the way that the range of plots should be showed, options: 1_min, max_min\
         Should be used with --plot.",
         default="1_min")
+    
+    parser.add_option('--fairness', action="store_true", dest="fairness",
+        help="Calculate the fairness coeficient propoused by Jain",
+        default=False)
 
 
     
     options, args = parser.parse_args()
     
+    if(options.simulate_q1_only == True):
+        simulateQ1SingleGateway(13, 12, 2000, "teste_12_gw_q1")
+        simulateQ1SingleGateway(36, 12, 2000, "teste_35_gw_q1")
+
+
+
     if(options.simulate == True):
 
         h1_mult_gateway_diversity = options.h1_mult_gateway_diversity
@@ -393,7 +466,7 @@ if __name__== "__main__":
                 device_power = 100
             elif options.device_power_variable == "power_lora_range":
                 power_method = "LORA_RANGE"
-                device_power = 14 
+                device_power = 14
             else:
                 print("Power method is unknow, the options are: --device_power_variable=\"power_fullrange\" \
                 and --device_power_variable=\"power_lora_range\"")
@@ -455,6 +528,9 @@ if __name__== "__main__":
         if(options.energy_consumption == True):
             plotEnergyConsumption(object_path, options.payload_size, options.package_per_day, options.battery, options.tx_mode)
         
+        if(options.fairness == True):
+            fairnessCoeficient(object_path)
+
         if(options.plot_range != "1_min" and options.plot_range != "max_min" ):
             print("Option --plot_range with wrong value. \
             The options are --plot_range=\"1_min\" or --plot_range=\"max_min\" ")

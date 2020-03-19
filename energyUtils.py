@@ -17,18 +17,18 @@ current_sleep_mA_paper = 0.0008230
 current_idle_mA_paper = 0.0012816
 current_receive_mA_paper = 14.28
 
-current_sleep_mA = current_sleep_mA_semtech
-current_idle_mA = current_idle_mA_semtech
-current_receive_mA = current_receive_mA_semtech
+current_sleep_mA = current_sleep_mA_paper
+current_idle_mA = current_idle_mA_paper
+current_receive_mA = current_receive_mA_paper
 
 time_sleep_1_window_ms = 1000 # is the time in sleep mode of the first windows of receive
 time_receive_1_window_ms = 500 # is the time in receive mode of the first windows of receive
 time_sleep_2_window_ms = 1000 # is the time in sleep mode of the secound windows of receive
 time_receive_2_window_ms = 500 # is the time in receive mode of the secound windows of receive
 voltage_supply = 3.3
+time_idle_1_window_ms = 1000
 
-
-def packageWorkCalculator(time_on_air, power_in_dbm):
+def packageWorkCalculator(time_on_air, power_in_dbm, mode = 'tx_rx_rx'):
     '''
     Parameters
         time_on_air: time of the packet in ms
@@ -47,9 +47,19 @@ def packageWorkCalculator(time_on_air, power_in_dbm):
         print ("ERROR: The power: %d dBm is not programmed" % power_in_dbm)
         exit(-1)
 
-    joule = jouleCalculator(power_in_W, time_on_air/1000)
-    return joule["mJ"]
+    joule_tx = jouleCalculator(power_in_W, time_on_air/1000)["mJ"]
 
+    joule_idle = jouleCalculator((current_idle_mA/1000)*3.3, (time_idle_1_window_ms)/1000)["mJ"] #have 2 windows
+    joule_rx = jouleCalculator((current_receive_mA/1000)*3.3, (time_receive_1_window_ms)/1000)["mJ"] #have 2 windows
+
+    if mode == 'tx_rx_rx':
+
+        return joule_tx + 2*joule_idle + 2*joule_rx
+    elif mode == 'tx_rx':
+        return joule_tx + joule_idle + joule_rx
+    else:
+        print("ERROR: mode isn't implemented")
+            
 
 def workInBaterry(voltage, current_mAh):
     '''
@@ -63,7 +73,7 @@ def workInBaterry(voltage, current_mAh):
     work_J = jouleCalculator(voltage*(current_mAh/1000), 60*60)['J']
     return work_J
 
-def lifeTimeWorkCalculator(life_time_sec, time_to_send_a_tx_ms, tx_power_in_dbm, number_of_package, mode = 'tx_rx'):
+def lifeTimeWorkCalculator(life_time_sec, time_to_send_a_tx_ms, tx_power_in_dbm, number_of_package, mode = 'tx_rx_rx'):
     '''
     Parameters
         life_time_sec: is the time that should be calculated the energy expended by the device
