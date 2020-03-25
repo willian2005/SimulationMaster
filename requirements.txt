@@ -1,0 +1,4 @@
+matplotlib
+mpmath
+mplcursors
+
