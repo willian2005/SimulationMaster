@@ -290,7 +290,7 @@ class DeviceDistribuition():
                 "add", lambda sel: sel.annotation.set_text(labels[sel.target.index]))
 
         plt.colorbar()
-        plt.title(title)
+        plt.title(title, fontsize=18)
         plt.savefig(str(title+code+".eps"), format='eps')
         plt.show()
         
@@ -346,7 +346,7 @@ class DeviceDistribuition():
         if(len(sf12) > 0):
             plt.hist(sf12, histtype=hist_type, color="brown", label="SF12") 
         
-        plt.title(title)
+        plt.title(title, fontsize=18)
         plt.legend(loc='upper right')
         plt.savefig(str(title+"C1_histogram.eps"), format='eps')
         plt.show()
@@ -384,7 +384,7 @@ class DeviceDistribuition():
         plt.scatter(-100, -1, c="brown", linewidths=0.01, label='SF12')
 
         plt.legend(loc='upper right')
-        plt.title(title)
+        plt.title(title, fontsize=18)
         plt.savefig(str("Device_distribuition.eps"), format='eps')
         plt.show()
 
