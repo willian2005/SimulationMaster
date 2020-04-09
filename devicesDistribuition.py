@@ -280,6 +280,7 @@ class DeviceDistribuition():
             elif code == "POWER":
                 value.append(self.getTransmissionPower(i))
                 labels.append(""+str(self.getTransmissionPower(i))+"\n"+str(self.getSFName(i)))
+        
         if(plot_range == "1_min"):
             plt.scatter(x, y, c=value, vmin=min(value), vmax=1, cmap=cm)
             mplcursors.cursor(hover=True).connect(
@@ -288,9 +289,16 @@ class DeviceDistribuition():
             plt.scatter(x, y, c=value, vmin=min(value), vmax=max(value), cmap=cm)        
             mplcursors.cursor(hover=True).connect(
                 "add", lambda sel: sel.annotation.set_text(labels[sel.target.index]))
+        
+
 
         plt.colorbar()
+        for gateway in self.gateway_list:
+           plt.scatter(gateway[0], gateway[1], color="red")
         plt.title(title, fontsize=18)
+        plt.xlabel("Metros", fontsize=14)
+        plt.ylabel("Metros", fontsize=14)
+        #plt.grid(True)
         plt.savefig(str(title+code+".eps"), format='eps')
         plt.show()
         
@@ -307,7 +315,7 @@ class DeviceDistribuition():
     def plotDevicesPower(self, title, plot_range):
         self.__plotDevices("POWER", title, plot_range)
 
-    def plotC1Histogram(self, title, hist_type = 'step'):
+    def plotHistogram(self, title, source, hist_type = 'step'):
 
         plt.close('all')
         plt.figure(1)
@@ -321,17 +329,40 @@ class DeviceDistribuition():
         for i in range(self.getNumberOfDevices() - 1):
             
             if self.getSFNumber(i) == 7:
-                sf7.append(self.getC1Probability(i))
+                if source == "C1":
+                    sf7.append(self.getC1Probability(i))
+                elif source == "POWER":
+                    sf7.append(self.getTransmissionPower(i))
+
             elif self.getSFNumber(i) == 8:
-                sf8.append(self.getC1Probability(i))
+                if source == "C1":
+                    sf8.append(self.getC1Probability(i))
+                elif source == "POWER":
+                    sf8.append(self.getTransmissionPower(i))
+
             elif self.getSFNumber(i) == 9:
-                sf9.append(self.getC1Probability(i))
+                if source == "C1":
+                    sf9.append(self.getC1Probability(i))
+                elif source == "POWER":
+                    sf9.append(self.getTransmissionPower(i))
+
             elif self.getSFNumber(i) == 10:
-                sf10.append(self.getC1Probability(i))
+                if source == "C1":
+                    sf10.append(self.getC1Probability(i))
+                elif source == "POWER":
+                    sf10.append(self.getTransmissionPower(i))
+
             elif self.getSFNumber(i) == 11:
-                sf11.append(self.getC1Probability(i))
+                if source == "C1":
+                    sf11.append(self.getC1Probability(i))
+                elif source == "POWER":
+                    sf11.append(self.getTransmissionPower(i))
+
             elif self.getSFNumber(i) == 12:
-                sf12.append(self.getC1Probability(i))
+                if source == "C1":
+                    sf12.append(self.getC1Probability(i))
+                elif source == "POWER":
+                    sf12.append(self.getTransmissionPower(i))
 
         if(len(sf7) > 0):
             plt.hist(sf7, histtype=hist_type, color="blue", label="SF7")    
@@ -348,44 +379,83 @@ class DeviceDistribuition():
         
         plt.title(title, fontsize=18)
         plt.legend(loc='upper right')
-        plt.savefig(str(title+"C1_histogram.eps"), format='eps')
+        #plt.grid(True)
+        if source == "C1":
+            plt.savefig(str(title+"C1_histogram.eps"), format='eps')
+        elif source == "POWER":
+            plt.savefig(str(title+"POWER_histogram.eps"), format='eps')
+        
         plt.show()
 
     def plotDevices(self, title):
 
-        plt.figure()
+        name_label = [0, 0, 0, 0, 0, 0, 0]
+        plt.figure(figsize=(8, 8))
 
         for i in range(self.getNumberOfDevices() - 1):
             if self.getSFName(i) == "SF7":
-                plt.scatter(self.getX(i), self.getY(i), c="blue", linewidths=0.01)
+                if name_label[0] == 0:
+                    name_label[0] = 1
+                    plt.scatter(self.getX(i), self.getY(i), c="blue", label='SF7', linewidths=0.01)
+                else:
+                    plt.scatter(self.getX(i), self.getY(i), c="blue", linewidths=0.01)
             elif self.getSFName(i) == "SF8": 
-                plt.scatter(self.getX(i), self.getY(i), c="green", linewidths=0.01)
+                if name_label[1] == 0:
+                    name_label[1] = 1
+                    plt.scatter(self.getX(i), self.getY(i), c="green", label='SF8', linewidths=0.01)
+                else:
+                    plt.scatter(self.getX(i), self.getY(i), c="green", linewidths=0.01)
             elif self.getSFName(i) == "SF9":
-                plt.scatter(self.getX(i), self.getY(i), c="yellow", linewidths=0.01)
+                if name_label[2] == 0:
+                    name_label[2] = 1
+                    plt.scatter(self.getX(i), self.getY(i), c="yellow", label='SF9', linewidths=0.01)
+                else:
+                    plt.scatter(self.getX(i), self.getY(i), c="yellow", linewidths=0.01)
             elif self.getSFName(i) == "SF10":
-                plt.scatter(self.getX(i), self.getY(i), c="pink", linewidths=0.01)
+                if name_label[3] == 0:
+                    name_label[3] = 1
+                    plt.scatter(self.getX(i), self.getY(i), c="pink", label='SF10', linewidths=0.01)
+                else:
+                    plt.scatter(self.getX(i), self.getY(i), c="pink", linewidths=0.01)
             elif self.getSFName(i) == "SF11":
-                plt.scatter(self.getX(i), self.getY(i), c="black", linewidths=0.01)
+                if name_label[4] == 0:
+                    name_label[4] = 1
+                    plt.scatter(self.getX(i), self.getY(i), c="black", label='SF11', linewidths=0.01)
+                else:
+                    plt.scatter(self.getX(i), self.getY(i), c="black", linewidths=0.01)
             elif self.getSFName(i) == "SF12":
-                plt.scatter(self.getX(i), self.getY(i), c="brown", linewidths=0.01)
+                if name_label[5] == 0:
+                    name_label[5] = 1
+                    plt.scatter(self.getX(i), self.getY(i), c="brown", label='SF12', linewidths=0.01)
+                else:
+                    plt.scatter(self.getX(i), self.getY(i), c="brown", linewidths=0.01)
 
         for gateway in self.gateway_list:
-            plt.scatter(gateway[0], gateway[1], c="red")
+            if name_label[6] == 0:
+                name_label[6] = 1
+                plt.scatter(gateway[0], gateway[1], label="Gateway", c="red")
+            else:
+                plt.scatter(gateway[0], gateway[1], c="red")
 
-        plt.ylim(0, self.radius*2)
-        plt.xlim(0, self.radius*2)
+        # plt.ylim(0, self.radius*2)
+        # plt.xlim(0, self.radius*2)
         #need because of the legend
-        plt.scatter(-100, -1, c="red", linewidths=0.01, label='Gateway')
-        plt.scatter(-100, -1, c="blue", linewidths=0.01, label='SF7')
-        plt.scatter(-100, -1, c="green", linewidths=0.01, label='SF8')
-        plt.scatter(-100, -1, c="yellow", linewidths=0.01, label='SF9')
-        plt.scatter(-100, -1, c="pink", linewidths=0.01, label='SF10')
-        plt.scatter(-100, -1, c="black", linewidths=0.01, label='SF11')
-        plt.scatter(-100, -1, c="brown", linewidths=0.01, label='SF12')
+        # plt.scatter(1000, 1000, c="red", linewidths=0.01, label='Gateway')
+        # plt.scatter(1000, 1000, c="blue", linewidths=0.01, label='SF7')
+        # plt.scatter(1000, 1000, c="green", linewidths=0.01, label='SF8')
+        # plt.scatter(1000, 1000, c="yellow", linewidths=0.01, label='SF9')
+        # plt.scatter(1000, 1000, c="pink", linewidths=0.01, label='SF10')
+        # plt.scatter(1000, 1000, c="black", linewidths=0.01, label='SF11')
+        # plt.scatter(1000, 1000, c="brown", linewidths=0.01, label='SF12')
 
-        plt.legend(loc='upper right')
-        plt.title(title, fontsize=18)
+        plt.xlabel("Metros", fontsize=18)
+        plt.ylabel("Metros", fontsize=18)
+        plt.legend(loc='upper right', fontsize=12)
+        #plt.title(title, fontsize=18)
+        plt.axis('equal')
+
         plt.savefig(str("Device_distribuition.eps"), format='eps')
+        
         plt.show()
 
     def averageDevicesDistribuition(self):

@@ -279,12 +279,14 @@ def plotDeviceDistribuition(distribuition_object_path, plot_range_method):
     print(f"Q1 average {device_distribuition.getQ1AverageBySF()}")
     print(f"H1 average {device_distribuition.getH1AverageBySF()}")
     print(f"Transmission Power average {device_distribuition.getTransmissionPowerAverageBySF()}")
-    device_distribuition.plotDevicesPower("Potência dos nós", plot_range_method)
+    device_distribuition.plotDevicesPower("", plot_range_method)
     device_distribuition.plotH1Devices("Distribuição H1", plot_range_method)
     device_distribuition.plotQ1Devices("Distribuição Q1", plot_range_method)
     device_distribuition.plotC1Devices("Distribuição C1", plot_range_method)
 
-    device_distribuition.plotC1Histogram("DER Histogram")
+    device_distribuition.plotHistogram("DER Histogram", "C1")
+    device_distribuition.plotHistogram("POWER Histogram", "POWER")
+    
     print("Average DER %f" % device_distribuition.averageC1DER())
 
 def Q1TheoricalSimulatedHaza():
