@@ -7,6 +7,10 @@ from loraUtils import *
 
 #this variable is how many times the SFx use TOA more than SF7 
 time_on_air_in_reference_sf7_list = [24.033195, 13.104072, 7.203980, 3.601990, 1.800995, 1.000000]
+#time_on_air_in_reference_sf7_list = [1/1.000000, 1/1.800995, 1/3.601990, 1/7.203980, 1/13.104072, 1/24.033195 ]
+#sum_total_time = sum(time_on_air_in_reference_sf7_list)
+total_devices_in_each_sf_500 = [239, 133, 66, 33, 18, 11]
+
 
 last_distance_of_sf = [2000, 4000, 6000, 8000, 10000, 12000]
 #last_distance_of_sf = [2200, 3000, 4000, 5000, 6000, 7800]
@@ -30,10 +34,11 @@ def getSF(distance, max_radius, method , number_of_devices, n, h1_target = 0.9, 
     elif method == "SAME_TIME_ON_AIR" or method == "SAME_TIME_ON_AIR_BY_GATEWAY" or method == "JUST_POWER_ADR":
         sf = "SF12"
         int_sf = 12
-        sum_total_time = sum(time_on_air_in_reference_sf7_list)
+        
         for sf_base in range(6):
             #is number total of SF 
-            sf_device_time_on_air = round(number_of_devices*(time_on_air_in_reference_sf7_list[sf_base]/sum_total_time))
+            # will sf_device_time_on_air = round(number_of_devices*(time_on_air_in_reference_sf7_list[sf_base]/sum_total_time))
+            sf_device_time_on_air = total_devices_in_each_sf_500[sf_base]#math.floor(number_of_devices*((time_on_air_in_reference_sf7_list[sf_base])/sum_total_time)) #richard
             
             if method == "SAME_TIME_ON_AIR_BY_GATEWAY":
                 sf_device_time_on_air = sf_device_time_on_air*number_of_gateways
