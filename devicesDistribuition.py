@@ -16,6 +16,14 @@ class DeviceDistribuition():
 
     def __init__(self, number_of_devices = 0, gateway_possition = None, radius = 0, sf_method = 0, transmission_power = 14, power_method = "STATIC", H1_target=0.9, h1_mult_gateway_diversity = False):
         
+        params = {'axes.labelsize'  : 16,
+                  'font.size'       : 16,
+                  'legend.fontsize' : 16,
+                  'xtick.labelsize' : 16,
+                  'ytick.labelsize' : 16
+                 }
+        plt.rcParams.update(params)
+
         self.n = 2.75
         self.power_method = power_method
         self.sf_method = sf_method
@@ -256,7 +264,7 @@ class DeviceDistribuition():
  
     def __plotDevices(self, code, title, plot_range):
 
-        fig = plt.figure()
+        fig = plt.figure(figsize=(9.5, 7.5))
         #cm = plt.cm.get_cmap('RdYlBu')
         cm = plt.cm.get_cmap('BuGn')
         x = []
@@ -300,9 +308,9 @@ class DeviceDistribuition():
         
         for gateway in self.gateway_list:
            plt.scatter(gateway[0], gateway[1], color="red")
-        plt.title(title, fontsize=18)
-        plt.xlabel("Metros", fontsize=14)
-        plt.ylabel("Metros", fontsize=14)
+        plt.title(title)
+        plt.xlabel("Metros")
+        plt.ylabel("Metros")
         #plt.grid(True)
         plt.savefig(str(title+code+".eps"), format='eps')
         plt.show()
@@ -386,9 +394,14 @@ class DeviceDistribuition():
             #plt.hist(sf11, len(sf11), density=True, histtype='step', cumulative=True, color="black", label="SF11")
         if(len(sf12) > 0):
             plt.hist(sf12, histtype=hist_type, color="brown", label="SF12") 
+<<<<<<< HEAD
             #plt.hist(sf12, len(sf12), density=True, histtype='step', cumulative=True, color="brown", label="SF12")
 
         plt.title(title, fontsize=18)
+=======
+        
+        plt.title(title)
+>>>>>>> d58ae3a78b89e35d4249609d2156ea6cd6decbcf
         plt.legend(loc='upper right')
         #plt.grid(True)
         if source == "C1":
@@ -412,9 +425,8 @@ class DeviceDistribuition():
 
 
     def plotDevices(self, title):
-
         name_label = [0, 0, 0, 0, 0, 0, 0]
-        plt.figure(figsize=(8, 8))
+        plt.figure(figsize=(7.5, 7.5))
 
         for i in range(self.getNumberOfDevices() - 1):
             if self.getSFName(i) == "SF7":
@@ -472,10 +484,10 @@ class DeviceDistribuition():
         # plt.scatter(1000, 1000, c="black", linewidths=0.01, label='SF11')
         # plt.scatter(1000, 1000, c="brown", linewidths=0.01, label='SF12')
 
-        plt.xlabel("Metros", fontsize=18)
-        plt.ylabel("Metros", fontsize=18)
-        plt.legend(loc='upper right', fontsize=12)
-        #plt.title(title, fontsize=18)
+        plt.xlabel("Metros")
+        plt.ylabel("Metros")
+        plt.legend(loc='upper right')
+        #plt.title(title)
         plt.axis('equal')
 
         plt.savefig(str("Device_distribuition.eps"), format='eps')
