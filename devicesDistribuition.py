@@ -292,7 +292,12 @@ class DeviceDistribuition():
         
 
 
-        plt.colorbar()
+        clb = plt.colorbar()
+        if code == "POWER":
+            clb.ax.set_title('dBm')
+        elif code == "C1_PROB":
+            clb.ax.set_title('DER')
+        
         for gateway in self.gateway_list:
            plt.scatter(gateway[0], gateway[1], color="red")
         plt.title(title, fontsize=18)
@@ -325,9 +330,9 @@ class DeviceDistribuition():
         sf10 = []
         sf11 = []
         sf12 = []
-        
+        sfs = []
         for i in range(self.getNumberOfDevices() - 1):
-            
+            sfs.append(self.getC1Probability(i))
             if self.getSFNumber(i) == 7:
                 if source == "C1":
                     sf7.append(self.getC1Probability(i))
@@ -366,17 +371,23 @@ class DeviceDistribuition():
 
         if(len(sf7) > 0):
             plt.hist(sf7, histtype=hist_type, color="blue", label="SF7")    
+            #plt.hist(sf7, len(sf7), density=True, histtype='step', cumulative=True, color="blue", label="SF7")
         if(len(sf8) > 0):
             plt.hist(sf8, histtype=hist_type, color="green", label="SF8") 
+            #plt.hist(sf8, len(sf8), density=True, histtype='step', cumulative=True, color="green", label="SF8")
         if(len(sf9) > 0):
             plt.hist(sf9, histtype=hist_type, color="yellow", label="SF9") 
+            #plt.hist(sf9, len(sf9), density=True, histtype='step', cumulative=True, color="yellow", label="SF9")
         if(len(sf10) > 0):
             plt.hist(sf10, histtype=hist_type, color="pink",  label="SF10") 
+            #plt.hist(sf10, len(sf10), density=True, histtype='step', cumulative=True, color="pink", label="SF10")
         if(len(sf11) > 0):
             plt.hist(sf11, histtype=hist_type, color="black", label="SF11") 
+            #plt.hist(sf11, len(sf11), density=True, histtype='step', cumulative=True, color="black", label="SF11")
         if(len(sf12) > 0):
             plt.hist(sf12, histtype=hist_type, color="brown", label="SF12") 
-        
+            #plt.hist(sf12, len(sf12), density=True, histtype='step', cumulative=True, color="brown", label="SF12")
+
         plt.title(title, fontsize=18)
         plt.legend(loc='upper right')
         #plt.grid(True)
@@ -386,6 +397,19 @@ class DeviceDistribuition():
             plt.savefig(str(title+"POWER_histogram.eps"), format='eps')
         
         plt.show()
+
+        # plt.close('all')
+        # plt.figure(2)
+
+        # sfs.append(1.0)
+        # plt.hist(sfs, len(sfs), density=True, histtype='step', cumulative=True)
+        # if source == "C1":
+        #     plt.savefig(str(title+"C1_histogram.eps"), format='eps')
+        # elif source == "POWER":
+        #     plt.savefig(str(title+"POWER_histogram.eps"), format='eps')
+        
+        # plt.show()
+
 
     def plotDevices(self, title):
 

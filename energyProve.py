@@ -189,7 +189,12 @@ def simulateC1MultiplesGateway(gateways, number_of_devices, radius, save_data, s
     H1IndividualDevices(devices_to_be_analized, n=2.75)
     devices_to_be_analized.updateC1Probability()
 
+    devices_to_be_analized.plotQ1Devices("Distribuição Q1", plot_range_method)
+    devices_to_be_analized.plotH1Devices("Distribuição H1", plot_range_method)
+    devices_to_be_analized.plotC1Devices("Distribuição C1", plot_range_method)
+    
     devices_to_be_analized.saveObjectData(save_data)
+
 
 def fairnessCoeficient(distribuition_object_path):
 
@@ -253,7 +258,43 @@ def plotEnergyConsumption(distribuition_object_path, payload_size, package_per_d
     print("SF_Method %s "% device_distribuition.sf_method)
     print("Diversity %d "% device_distribuition.h1_mult_gateway_diversity)
     print("H1_target %f "% device_distribuition.H1_target)
+
+def plotCDFTwoDistribuition():
+
+    device_distribuition_div = DeviceDistribuition()
+    device_distribuition_div.loadObjectData("output_data/DeviceDistribuition_DIVERSITY_th1_083_8000_time_gw_4_STOA2020-03-28_21_38.plt")
+
+    device_distribuition_ref = DeviceDistribuition()
+    device_distribuition_ref.loadObjectData("output_data/DeviceDistribuition_th1_077_8000_time_gw_4_STOA2020-03-28_21_21.plt")    
+
+    sfs_div = []
+    sfs_ref = []
+
+
     
+    for i in range(device_distribuition_div.getNumberOfDevices() - 1):
+
+        sfs_div.append(device_distribuition_div.getC1Probability(i))
+        sfs_ref.append(device_distribuition_ref.getC1Probability(i))
+
+    sfs_div.append(1)
+    sfs_ref.append(1)
+    
+    plt.close('all')
+    plt.figure(2)
+    
+    plt.hist(sfs_div, len(sfs_div), density=True, histtype='step', cumulative=True, color="green", label="Proposto")
+
+    plt.hist(sfs_ref, len(sfs_ref), density=True, histtype='step',  fc="none", cumulative=True, color="blue", label="Referência")
+
+    left, right = plt.xlim()  # return the current xlim
+    plt.xlim(left, 1)
+    plt.title("CDF da DER dos nós.", fontsize=18)
+    plt.legend(loc='upper left')
+    
+    plt.savefig(str("CDF_8000_gw4_DER_085.eps"), format='eps')
+    plt.show()
+
 
 def plotDeviceDistribuition(distribuition_object_path, plot_range_method):
 
@@ -376,8 +417,8 @@ if __name__== "__main__":
         help="Is the charge of a battery (in Joules), the default is 13320, used to calculate the life time of device, should be used with --energy_consumption", 
         default=13320)
 
-    parser.add_option('--tx_mode',
-        action="store", dest="tx_mode",
+    parser.add_option('--rx_mode',
+        action="store", dest="rx_mode",
         help="Is the number of rx windows in receive data, could be \"tx\", \"tx_rx\", \"tx_rx_rx\", the default is \"tx\", used to calculate the life time of device, should be used with --energy_consumption", 
         default="tx_rx")
 
@@ -528,7 +569,7 @@ if __name__== "__main__":
 
         print("Plot the data in the file: %s" % object_path)
         if(options.energy_consumption == True):
-            plotEnergyConsumption(object_path, options.payload_size, options.package_per_day, options.battery, options.tx_mode)
+            plotEnergyConsumption(object_path, options.payload_size, options.package_per_day, options.battery, options.rx_mode)
         
         if(options.fairness == True):
             fairnessCoeficient(object_path)

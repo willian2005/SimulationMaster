@@ -6,9 +6,10 @@ from loraTheoricalSimulation import P1TheoricalFromH1MultGatewayDiversity
 from loraUtils import *
 
 #this variable is how many times the SFx use TOA more than SF7 
-time_on_air_in_reference_sf7_list = [24.033195, 13.104072, 7.203980, 3.601990, 1.800995, 1.000000]
+#time_on_air_in_reference_sf7_list = [24.033195, 13.104072, 7.203980, 3.601990, 1.800995, 1.000000]
 #time_on_air_in_reference_sf7_list = [1/1.000000, 1/1.800995, 1/3.601990, 1/7.203980, 1/13.104072, 1/24.033195 ]
-#sum_total_time = sum(time_on_air_in_reference_sf7_list)
+time_on_air_in_reference_sf7_list = [1/1.000000, 1/1.834, 1/3.336, 1/6.672, 1/13.343, 1/24.031 ]
+sum_total_time = sum(time_on_air_in_reference_sf7_list)
 total_devices_in_each_sf_500 = [239, 133, 66, 33, 18, 11]
 
 
@@ -38,8 +39,8 @@ def getSF(distance, max_radius, method , number_of_devices, n, h1_target = 0.9, 
         for sf_base in range(6):
             #is number total of SF 
             # will sf_device_time_on_air = round(number_of_devices*(time_on_air_in_reference_sf7_list[sf_base]/sum_total_time))
-            sf_device_time_on_air = total_devices_in_each_sf_500[sf_base]#math.floor(number_of_devices*((time_on_air_in_reference_sf7_list[sf_base])/sum_total_time)) #richard
-            
+            #sf_device_time_on_air = total_devices_in_each_sf_500[sf_base]#math.floor(number_of_devices*((time_on_air_in_reference_sf7_list[sf_base])/sum_total_time)) #richard
+            sf_device_time_on_air = math.floor(number_of_devices*((time_on_air_in_reference_sf7_list[sf_base])/sum_total_time))
             if method == "SAME_TIME_ON_AIR_BY_GATEWAY":
                 sf_device_time_on_air = sf_device_time_on_air*number_of_gateways
             
